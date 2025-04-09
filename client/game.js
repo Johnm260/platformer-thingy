@@ -10,6 +10,7 @@ let chatMessages;
 
 let otherPlayers = {};
 let isFrozen = false;
+let isTyping = false; // Track if the user is typing
 
 // Create the game instance with Phaser 3
 const config = {
@@ -61,49 +62,38 @@ function create() {
     chatInput = document.getElementById("chat-input");
     chatMessages = document.getElementById("chat-messages");
 
-    // Send message on Enter
+    // Detect when the user starts typing
+    chatInput.addEventListener("focus", () => {
+        isTyping = true;  // Player is typing, disable movement
+    });
+
+    // Detect when the user leaves the input (clicking out or pressing Escape)
+    chatInput.addEventListener("blur", () => {
+        isTyping = false;  // Player is done typing, enable movement
+    });
+
+    // Handle pressing Enter to send message
     chatInput.addEventListener("keydown", function (e) {
         if (e.key === "Enter" && chatInput.value.trim() !== "") {
             const message = chatInput.value.trim();
             socket.emit("chatMessage", { name: localStorage.getItem("playerName"), message });
-            chatInput.value = "";
+            chatInput.value = "";  // Clear chat input
+            chatInput.blur();  // Remove focus from input after sending message
         }
     });
-        
-    // Function to darken the color
-    function darkenColor({ red, green, blue }, factor) {
-        const darkRed = Math.floor(red * (1 - factor));
-        const darkGreen = Math.floor(green * (1 - factor));
-        const darkBlue = Math.floor(blue * (1 - factor));
-        return rgbToHexString({ red: darkRed, green: darkGreen, blue: darkBlue });
-    }
-    
-    socket.on("chatMessage", ({ name, message, color }) => {
-        const el = document.createElement("div");
 
-        // Convert the color to hex format for display purposes
-        const hexColor = rgbToHexString(color);
-
-        // Calculate a darkened version of the color by applying an RGBA overlay
-        const darkenedColor = darkenColor(color, 0.5); // 0.5 is the darkening factor
-
-        // Add the player's name with the darkened color
-        el.innerHTML = `<span style="color: ${hexColor}; font-weight: bold; text-shadow: 1px 1px 3px ${darkenedColor};">${name}</span>: ${message}`;
-
-        // Append the message to the chat container
-        chatMessages.appendChild(el);
-
-        // Scroll to the bottom of the chat
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+    // Handle pressing Escape to cancel typing (losing focus)
+    chatInput.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") {
+            chatInput.blur();  // Remove focus from input and allow movement again
+        }
     });
-
 
     // Prevent Phaser from blocking spacebar when typing
     chatInput.addEventListener("keydown", function (e) {
         e.stopPropagation(); // Prevent Phaser from interfering
     });
 
-    // Emit 'newPlayer' with name and color to the server
     socket.emit('newPlayer', { name, color });
 
     // Ensure players are initialized before using them
@@ -152,11 +142,31 @@ function create() {
             }
         }
     });
+
+    // Handle chat messages
+    socket.on("chatMessage", ({ name, message, color }) => {
+        const el = document.createElement("div");
+
+        // Convert the color to hex format for display purposes
+        const hexColor = rgbToHexString(color);
+
+        // Calculate a darkened version of the color by applying an RGBA overlay
+        const darkenedColor = darkenColor(color, 0.5); // 0.5 is the darkening factor
+
+        // Add the player's name with the darkened color
+        el.innerHTML = `<span style="color: ${hexColor}; font-weight: bold; text-shadow: 1px 1px 3px ${darkenedColor};">${name}</span>: ${message}`;
+
+        // Append the message to the chat container
+        chatMessages.appendChild(el);
+
+        // Scroll to the bottom of the chat
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    });
 }
 
 
 function update() {
-    if (!isFrozen) {
+    if (!isFrozen && !isTyping) {  // Only allow movement if not typing
         if (cursors.left.isDown) {
             localPlayer.setVelocityX(-200);
         } else if (cursors.right.isDown) {
@@ -202,6 +212,13 @@ function rgbToHexTint({ red, green, blue }) {
     return (r << 16) | (g << 8) | b;
 }
 
+// Darken color function
+function darkenColor({ red, green, blue }, factor) {
+    const darkRed = Math.floor(red * (1 - factor));
+    const darkGreen = Math.floor(green * (1 - factor));
+    const darkBlue = Math.floor(blue * (1 - factor));
+    return rgbToHexString({ red: darkRed, green: darkGreen, blue: darkBlue });
+}
 
 window.addEventListener('blur', () => {
     if (!isFrozen) {

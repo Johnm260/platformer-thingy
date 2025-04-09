@@ -21,11 +21,11 @@
         }
         #chat-container {
           position: absolute;
-          bottom: 10px;
+          top: 50px;
           left: 10px;
           width: 300px;
           max-height: 200px;
-          background: rgba(255, 255, 255, 0.8);
+          background: rgba(255, 255, 255, 0.4);
           border: 1px solid #000;
           border-radius: 5px;
           overflow: hidden;
@@ -42,6 +42,7 @@
 
       #chat-input {
           width: 100%;
+          background: rgba(255, 255, 255, 0.5);
           border: none;
           padding: 5px;
           box-sizing: border-box;
@@ -50,12 +51,12 @@
     </style>
 </head>
 <body>
-    <div id="game-container"></div>
+    
     <div id="chat-container">
     <div id="chat-messages"></div>
     <input id="chat-input" type="text" placeholder="Type a message..." maxlength="100" />
     </div>
-
+    <div id="game-container"></div>
 
     <!-- Load Phaser library first -->
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.0/dist/phaser.js"></script>
