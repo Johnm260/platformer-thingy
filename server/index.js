@@ -11,7 +11,7 @@ app.use(express.static('client'));
 let players = {};
 
 io.on('connection', (socket) => {
-    console.log('a user connected', socket.id);
+    
 
     // When a new player joins
     socket.on('newPlayer', ({ name, color }) => {
@@ -23,6 +23,7 @@ io.on('connection', (socket) => {
             name,
             color
         };
+        console.log('A user connected,', socket.id, 'username:', players[socket.id].name);
 
         // Emit the 'init' event to the newly connected player
         socket.emit('init', { players, id: socket.id });

