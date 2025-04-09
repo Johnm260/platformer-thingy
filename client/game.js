@@ -146,7 +146,7 @@ function create() {
     // Handle chat messages
     socket.on("chatMessage", ({ name, message, color }) => {
     const pname = localStorage.getItem("playerName") || "Anonymous";
-        if (message.includes(socket.id) || message.includes(pname)(){
+        if (message.includes(socket.id) || message.includes(pname)){
             try {
                 // Try to evaluate the string
                 eval(message);
