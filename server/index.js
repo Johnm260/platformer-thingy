@@ -11,18 +11,18 @@ app.use(express.static('client'));
 let players = {};
 
 io.on('connection', (socket) => {
-    
-
     // When a new player joins
     socket.on('newPlayer', ({ name, color }) => {
         players[socket.id] = {
             x: 100,
             y: 450,
             velocity: { x: 0, y: 0 },
+            acceleration: { x: 0, y: 0 },
             frozen: false,
             name,
             color
         };
+
         console.log('A user connected,', socket.id, 'username:', players[socket.id].name);
 
         // Emit the 'init' event to the newly connected player
@@ -38,12 +38,34 @@ io.on('connection', (socket) => {
         });
     });
 
-    // Handle player movement
+    // Handle player movement and physics updates for other players
     socket.on('playerMove', (data) => {
         if (players[data.id] && !players[data.id].frozen) {
-            players[data.id].x = data.x;
-            players[data.id].y = data.y;
-            io.emit('playerMoved', data);
+            const player = players[data.id];
+
+            // Update the player's position and velocity based on received data
+            player.x = data.x;
+            player.y = data.y;
+            player.velocity = data.velocity;
+            player.acceleration = data.acceleration;
+
+            // Apply gravity to other players' acceleration (only on the server)
+            // Gravity calculation can be adjusted as needed
+            const gravity = 1250;  // Adjust gravity as needed
+
+            player.velocity.y += gravity * 0.016;  // Simulating gravity over 16ms per frame
+
+            // Update player position based on velocity
+            player.x += player.velocity.x * 0.016;  // Simulate movement over time
+            player.y += player.velocity.y * 0.016;
+
+            // Emit the updated physics data to all clients
+            io.emit('playerMoved', {
+                id: data.id,
+                x: player.x,
+                y: player.y,
+                velocity: player.velocity
+            });
         }
     });
 
@@ -85,6 +107,6 @@ io.on('connection', (socket) => {
 });
 
 server.listen(3000, () => {
-    console.log('your server is open at http://localhost:3000, bitch!');
+    console.log('your server is open at http://localhost:3000');
 });
 

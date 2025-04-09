@@ -193,14 +193,35 @@ function update() {
             localPlayer.setVelocityY(-550);
         }
 
+        // Send position, velocity, and local player acceleration to the server
         const playerData = {
             id: socket.id,
             x: localPlayer.x,
-            y: localPlayer.y
+            y: localPlayer.y,
+            velocity: {
+                x: localPlayer.body.velocity.x,
+                y: localPlayer.body.velocity.y
+            },
+            acceleration: {
+                x: localPlayer.body.acceleration.x,
+                y: localPlayer.body.acceleration.y
+            }
         };
+
+        // Emit player data (position, velocity, and acceleration) to the server
         socket.emit('playerMove', playerData);
     }
 }
+
+// Listen for updates from other players
+socket.on('playerMoved', (playerData) => {
+    if (otherPlayers[playerData.id]) {
+        otherPlayers[playerData.id].setX(playerData.x);
+        otherPlayers[playerData.id].setY(playerData.y);
+        otherPlayers[playerData.id].setVelocity(playerData.velocity.x, playerData.velocity.y);
+    }
+});
+
 
 function createOtherPlayer(id, data) {
     const other = this.physics.add.sprite(data.x, data.y, 'player');
