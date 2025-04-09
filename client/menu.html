@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiplayer Platformer</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #87CEEB; /* Sky blue for visual clarity */
+        }
+
+        .menu-container {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 300px;
+        }
+
+        input, button {
+            margin-bottom: 20px;
+            padding: 10px;
+            font-size: 18px;
+            width: 200px;
+        }
+        
+        .redSlider {
+          -webkit-appearance: none;
+          width: 90%;
+          height: 5px;
+          background: #FF0000;
+          outline: none;
+          opacity: 0.7;
+          -webkit-transition: .2s;
+          transition: opacity .2s;
+        }
+
+        .redSlider:hover {
+          opacity: 1;
+        }
+
+        .redSlider::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 30px;
+          height: 30px;
+          background: #CCCCCC;
+          cursor: pointer;
+        }
+
+        .redSlider::-moz-range-thumb {
+          width: 30px;
+          height: 30px;
+          background: #CCCCCC;
+          cursor: pointer;
+        }
+        .greenSlider {
+          -webkit-appearance: none;
+          width: 90%;
+          height: 5px;
+          background: #00FF00;
+          outline: none;
+          opacity: 0.7;
+          -webkit-transition: .2s;
+          transition: opacity .2s;
+        }
+
+        .greenSlider:hover {
+          opacity: 1;
+        }
+
+        .greenSlider::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 30px;
+          height: 30px;
+          background: #CCCCCC;
+          cursor: pointer;
+        }
+
+        .greenSlider::-moz-range-thumb {
+          width: 30px;
+          height: 30px;
+          background: #CCCCCC;
+          cursor: pointer;
+        }
+        .blueSlider {
+          -webkit-appearance: none;
+          width: 90%;
+          height: 5px;
+          background: #0000FF;
+          outline: none;
+          opacity: 0.7;
+          -webkit-transition: .2s;
+          transition: opacity .2s;
+        }
+
+        .blueSlider:hover {
+          opacity: 1;
+        }
+
+        .blueSlider::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 30px;
+          height: 30px;
+          background: #CCCCCC;
+          cursor: pointer;
+        }
+
+        .blueSlider::-moz-range-thumb {
+          width: 30px;
+          height: 30px;
+          background: #CCCCCC;
+          cursor: pointer;
+        }
+        .color-slider {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .color-slider input[type="range"] {
+            width: 200px;
+            height: 10px;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+
+        
+        
+
+        .number-input {
+            width: 60px;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .color-preview {
+            width: 50px;
+            height: 50px;
+            border-radius: 5px;
+            margin-top: 10px;
+            margin-left: 20px;
+            display: inline-block;
+            border: 2px solid black; /* Black border for the preview box */
+        }
+    </style>
+</head>
+<body>
+    <div class="menu-container">
+        <h1>Enter your name:</h1>
+        <input type="text" id="playerName" placeholder="Your name" />
+        
+        <div class="color-slider">
+            <input type="range" id="redSlider" min="0" max="255" value="255" class="redSlider">
+            <input type="number" id="redNumber" class="number-input" min="0" max="255" value="255">
+        </div>
+
+        <div class="color-slider">
+            <input type="range" id="greenSlider" min="0" max="255" value="255" class="greenSlider">
+            <input type="number" id="greenNumber" class="number-input" min="0" max="255" value="255">
+        </div>
+
+        <div class="color-slider">
+            <input type="range" id="blueSlider" min="0" max="255" value="255" class="blueSlider">
+            <input type="number" id="blueNumber" class="number-input" min="0" max="255" value="255">
+        </div>
+
+        <div>
+            <button id="startButton">Play</button>
+        </div>
+
+        <div>
+            <span>Color Preview:</span>
+            <div id="colorPreview" class="color-preview" style="background-color: rgb(255, 255, 255);"></div>
+        </div>
+    </div>
+
+    <script>
+        // Get sliders, number inputs, and preview box
+        const redSlider = document.getElementById("redSlider");
+        const greenSlider = document.getElementById("greenSlider");
+        const blueSlider = document.getElementById("blueSlider");
+        const redNumber = document.getElementById("redNumber");
+        const greenNumber = document.getElementById("greenNumber");
+        const blueNumber = document.getElementById("blueNumber");
+        const colorPreview = document.getElementById("colorPreview");
+
+        // Update the preview color and display values
+        function updateColorPreview() {
+            const red = redSlider.value;
+            const green = greenSlider.value;
+            const blue = blueSlider.value;
+
+            // Sync the number inputs with the sliders
+            redNumber.value = red;
+            greenNumber.value = green;
+            blueNumber.value = blue;
+
+            // Update the preview box
+            colorPreview.style.backgroundColor = `rgb(${red}, ${green}, ${blue})`;
+        }
+
+        // Sync number input with slider
+        function syncSliderFromNumber(slider, numberInput) {
+            numberInput.value = slider.value;
+        }
+
+        // Event listeners for sliders
+        redSlider.addEventListener("input", updateColorPreview);
+        greenSlider.addEventListener("input", updateColorPreview);
+        blueSlider.addEventListener("input", updateColorPreview);
+
+        // Event listeners for number inputs
+        redNumber.addEventListener("input", () => {
+            redSlider.value = redNumber.value;
+            updateColorPreview();
+        });
+        greenNumber.addEventListener("input", () => {
+            greenSlider.value = greenNumber.value;
+            updateColorPreview();
+        });
+        blueNumber.addEventListener("input", () => {
+            blueSlider.value = blueNumber.value;
+            updateColorPreview();
+        });
+
+        // Play button logic
+        document.getElementById("startButton").addEventListener("click", () => {
+            const playerName = document.getElementById("playerName").value;
+            if (playerName) {
+                const red = redSlider.value;
+                const green = greenSlider.value;
+                const blue = blueSlider.value;
+
+                // Store player info in localStorage
+                localStorage.setItem("playerName", playerName); // Save player name
+                localStorage.setItem("playerColor", JSON.stringify({ red, green, blue })); // Save color settings
+
+                window.location.href = "index.html"; // Redirect to index.html
+            } else {
+                alert("Please enter a name.");
+            }
+        });
+
+        // Initialize color preview
+        updateColorPreview();
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiplayer Platformer</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #87CEEB; /* Sky blue for visual clarity */
+        }
+
+        #game-container {
+            display: block;
+            margin: 0 auto;
+        }
+        #chat-container {
+          position: absolute;
+          bottom: 10px;
+          left: 10px;
+          width: 300px;
+          max-height: 200px;
+          background: rgba(255, 255, 255, 0.8);
+          border: 1px solid #000;
+          border-radius: 5px;
+          overflow: hidden;
+          font-family: sans-serif;
+          z-index: 10;
+      }
+
+      #chat-messages {
+          height: 160px;
+          overflow-y: auto;
+          padding: 5px;
+          font-size: 14px;
+      }
+
+      #chat-input {
+          width: 100%;
+          border: none;
+          padding: 5px;
+          box-sizing: border-box;
+          outline: none;
+      }
+    </style>
+</head>
+<body>
+    <div id="game-container"></div>
+    <div id="chat-container">
+    <div id="chat-messages"></div>
+    <input id="chat-input" type="text" placeholder="Type a message..." maxlength="100" />
+    </div>
+
+
+    <!-- Load Phaser library first -->
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.0/dist/phaser.js"></script>
+
+    <!-- Load the Socket.IO client -->
+    <script src="/socket.io/socket.io.js"></script>
+
+    <!-- Load the game.js script (your custom game code) -->
+    <script src="game.js"></script>
+</body>
+</html>
+

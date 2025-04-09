@@ -1,0 +1,25 @@
+{
+  "name": "platformer-thingy",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/johnm260/platformer-thingy.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/johnm260/platformer-thingy/issues"
+  },
+  "homepage": "https://github.com/johnm260/platformer-thingy#readme",
+  "dependencies": {
+    "express": "^5.1.0",
+    "phaser": "^3.88.2",
+    "socket.io": "^4.8.1"
+  }
+}
