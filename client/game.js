@@ -39,13 +39,20 @@ const game = new Phaser.Game(config);
 function preload() {
     this.load.image('player', 'assets/test_sprite.png');
     this.load.image('platform', 'assets/platform.png');
+    this.load.image('platform2', 'assets/platform2.png');
 }
 
 function create() {
     platforms = this.physics.add.staticGroup();
     platforms.create(250, 588, 'platform').setScale(1).refreshBody(); 
     platforms.create(750, 588, 'platform').setScale(1).refreshBody(); 
-    platforms.create(1250, 588, 'platform').setScale(1).refreshBody(); 
+    platforms.create(1250, 588, 'platform').setScale(1).refreshBody();
+    platforms.create(300, 450, 'platform2').setScale(0.75).refreshBody();
+    platforms.create(1000, 350, 'platform2').setScale(0.75).refreshBody();
+    platforms.create(800, 500, 'platform2').setScale(0.75).refreshBody();
+    platforms.create(500, 300, 'platform2').setScale(0.75).refreshBody();
+    platforms.create(700, 150, 'platform2').setScale(0.75).refreshBody();
+    platforms.create(150, 250, 'platform2').setScale(0.75).refreshBody();
 
     const name = localStorage.getItem("playerName") || "Anonymous";
     const color = JSON.parse(localStorage.getItem("playerColor")) || { red: 255, green: 255, blue: 255 };
@@ -182,15 +189,15 @@ function create() {
 function update() {
     if (!isFrozen && !isTyping) {  // Only allow movement if not typing
         if (cursors.left.isDown) {
-            localPlayer.setVelocityX(-200);
+            localPlayer.setVelocityX(-250);
         } else if (cursors.right.isDown) {
-            localPlayer.setVelocityX(200);
+            localPlayer.setVelocityX(250);
         } else {
             localPlayer.setVelocityX(0);
         }
 
         if (cursors.up.isDown && localPlayer.body.touching.down) {
-            localPlayer.setVelocityY(-550);
+            localPlayer.setVelocityY(-650);
         }
 
         // Send position, velocity, and local player acceleration to the server
