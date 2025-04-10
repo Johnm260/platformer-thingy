@@ -3,11 +3,12 @@ const socket = io(); // Connect to the server
 let players;
 let platforms;
 let floatPlatforms;
-let cursors;
+let WKey, AKey, SKey, DKey;
 let localPlayer;
 let chatInput
 let chatMessages;
 
+let bullets = [];
 let otherPlayers = {};
 let isFrozen = false;
 let isTyping = false; // Track if the user is typing
@@ -40,7 +41,9 @@ function preload() {
     this.load.image('player', 'assets/test_sprite.png');
     this.load.image('platform', 'assets/platform.png');
     this.load.image('platform2', 'assets/platform2.png');
+    this.load.image('arrow', 'assets/arrow.png');
 }
+
 
 function create() {
     platforms = this.physics.add.staticGroup();
@@ -64,7 +67,50 @@ function create() {
     this.physics.add.collider(localPlayer, platforms);
     localPlayer.hp = 100;
 
-    cursors = this.input.keyboard.createCursorKeys();
+    WKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
+    AKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
+    SKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
+    DKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+    
+    this.bulletGroup = this.physics.add.group();
+
+    let direction = { x: 0, y: 0 };
+
+    // Track the mouse position
+    let mousePosition = { x: 0, y: 0 };
+    let player = localPlayer;
+    // Update mouse position on pointer move
+    this.input.on('pointermove', (pointer) => {
+        mousePosition.x = pointer.x;
+        mousePosition.y = pointer.y;
+    });
+
+    // Handle the 'E' key press to shoot towards the mouse
+    this.input.keyboard.on('keydown-E', () => {
+        if (isFrozen || isTyping) return;
+        shootBulletTowardsMouse();
+    });
+
+    // Function to calculate the direction and shoot a bullet towards the mouse
+    function shootBulletTowardsMouse() {
+        // Calculate direction towards mouse (relative to player position)
+        let dx = mousePosition.x - player.x;
+        let dy = mousePosition.y - player.y;
+
+        // Normalize the direction vector
+        let magnitude = Math.sqrt(dx * dx + dy * dy);
+        let normalizedDirection = { x: dx / magnitude, y: dy / magnitude };
+
+        // Fire the bullet in that direction
+        let id = generateBulletId();  // Ensure unique bullet IDs
+        socket.emit('shootBullet', { direction: normalizedDirection, id });
+    }
+
+
+    // Optional: Add functionality to prevent firing bullets continuously
+    // (if needed, add logic here to prevent spamming bullets)
+
+
     
     // Chat UI setup
     chatInput = document.getElementById("chat-input");
@@ -154,6 +200,43 @@ function create() {
             }
         }
     });
+    
+    socket.on('bulletFired', (bulletData, id) => {
+        const bullet = game.scene.scenes[0].bulletGroup.create(bulletData.x, bulletData.y);
+        bullet.setSize(8, 8);
+        bullet.setDisplaySize(8, 8);
+        bullet.setTint(0xff0000);
+        bullet.setCollideWorldBounds(true);
+        bullet.body.onWorldBounds = true;
+        bullet.body.allowGravity = true;
+
+        // Generate a unique ID for the bullet
+        bullet.id = id;
+
+        bullet.body.velocity.x = bulletData.dir.x * 800;
+        bullet.body.velocity.y = bulletData.dir.y * 800;    
+        bullet.shooterId = bulletData.shooterId;
+        
+        updateBulletRotation(bullet);
+        
+        // Destroy bullet when it hits a platform
+        game.scene.scenes[0].physics.add.collider(bullet, platforms, () => {
+            bullet.destroy();
+            bullets = bullets.filter(b => b !== bullet);
+            socket.emit('destroyBullet', bullet.id);
+        });
+
+        // Handle bullet out of bounds
+        bullet.body.world.on('worldbounds', (body) => {
+            if (body.gameObject === bullet) {
+                destroyBullet(bullet);
+                socket.emit('bulletOutOfBounds', bullet.id);
+            }
+        });
+
+        bullets.push(bullet);
+    });
+
 
     // Handle chat messages
     socket.on("chatMessage", ({ name, message, color, isConsole }) => {
@@ -186,7 +269,24 @@ function create() {
     });
 }
 
-function takeDmg(damage){
+function updateBulletRotation(bullet) {
+    // Calculate the angle of the bullet based on its velocity
+    const angle = Math.atan2(bullet.body.velocity.y, bullet.body.velocity.x);
+
+    // Apply the angle to the bullet sprite
+    bullet.setAngle(Phaser.Math.RadToDeg(angle));
+}
+
+
+function generateBulletId() {
+    return `bullet_${Date.now()}_${Math.floor(Math.random() * 1000000)}`;
+}
+
+
+function takeDmg(damage, origin){
+    if (origin == null){
+        origin = "console";
+    }
     if (localPlayer.hp <= damage){ // Respawn character (add later)
         localPlayer.destroy();
         window.location.assign("menu.html");
@@ -194,20 +294,31 @@ function takeDmg(damage){
     localPlayer.hp -= damage;
     }
     
-    socket.emit("takeDamage", damage);
+    socket.emit("takeDamage", damage, origin);
 }
 
+function dealDmg(targetId, amount) {
+    socket.emit("dealDamage", { targetId, amount });
+}
+
+
 function update() {
+    bullets.forEach(bullet => {
+        if (bullet && bullet.active) {
+            // Continuously update the bullet's rotation to follow its velocity
+            updateBulletRotation(bullet);
+        }
+    });
     if (!isFrozen && !isTyping) {  // Only allow movement if not typing
-        if (cursors.left.isDown) {
+        if (AKey.isDown) {
             localPlayer.setVelocityX(-250);
-        } else if (cursors.right.isDown) {
+        } else if (DKey.isDown) {
             localPlayer.setVelocityX(250);
         } else {
             localPlayer.setVelocityX(0);
         }
 
-        if (cursors.up.isDown && localPlayer.body.touching.down) {
+        if (WKey.isDown && localPlayer.body.touching.down) {
             localPlayer.setVelocityY(-650);
         }
 
@@ -226,6 +337,33 @@ function update() {
                 y: localPlayer.body.acceleration.y
             }
         };
+    if (bullets.length > 0) {    
+        bullets.forEach((bullet, index) => {
+            if (!bullet || !bullet.active) return;
+                for (let id in otherPlayers) {
+                    const target = otherPlayers[id];
+                    if (Phaser.Geom.Intersects.RectangleToRectangle(bullet.getBounds(), target.getBounds())) {                    
+    // Emit bullet hit to the server
+                        socket.emit('bulletHitPlayer', bullet.id);
+
+                        // Deal damage to the player
+                        dealDmg(id, 15);
+
+                        // Destroy the bullet locally
+                        destroyBullet(bullet);
+                        bullets.splice(index, 1); // Remove bullet from the array
+                        break;
+                    }
+
+                }
+
+                // Bullet out of bounds cleanup
+                if (bullet.x < 0 || bullet.x > 1200 || bullet.y < 0 || bullet.y > 620) {
+                    bullet.destroy();
+                    bullets.splice(index, 1);
+                }
+            });
+        }
 
         // Emit player data (position, velocity, and acceleration) to the server
         socket.emit('playerMove', playerData);
@@ -241,7 +379,73 @@ socket.on('playerMoved', (playerData) => {
     }
 });
 
+socket.on('syncHP', (hp) => {
+    localPlayer.hp = hp;
+    if (localPlayer.hp <= 0){ // Respawn character (add later)
+        localPlayer.destroy();
+        window.location.assign("menu.html");
+    }
+});
 
+
+socket.on('bulletHitPlayer', (bulletId) => {
+    // Find the bullet and destroy it locally
+    const bullet = bullets.find(b => b.id === bulletId);
+    if (bullet) {
+        destroyBullet(bullet); // Destroy bullet locally
+        bullets = bullets.filter(b => b !== bullet); // Remove bullet from array
+    }
+});
+
+
+socket.on('bulletOutOfBounds', (bulletId) => {
+    const bullet = bullets.find(b => b.id === bulletId);
+    if (bullet) {
+        destroyBullet(bullet);
+    }
+});
+
+socket.on("tookDamage", ({ dmg, id, hp, origin }) => {
+    if (id === socket.id) { // Check if this is the local player
+        localPlayer.hp = hp; // Update local player's health
+        
+        // Optionally, display some visual feedback for damage (like flash or health bar update)
+        console.log(`You took ${dmg} damage from ${origin}. Your current health is ${localPlayer.hp}.`);
+        
+        // Handle player death (if hp <= 0)
+        if (localPlayer.hp <= 0) {
+            console.log("You have died!");
+            // Trigger death logic like respawn, or restart game
+            localPlayer.destroy();
+            window.location.assign("menu.html"); // Redirect to a menu or restart the game
+        }
+    }
+});
+
+
+// Client-side: When a bullet is destroyed (on all clients)
+socket.on('destroyBullet', (bulletId) => {
+    console.log('Bullet destroyed:', bulletId);
+
+    // Find the bullet in the local array
+    const bullet = bullets.find(b => b.id === bulletId);
+    
+    if (bullet) {
+        // Handle the bullet destruction
+        destroyBullet(bullet);  // Implement the removal of the bullet visually
+        bullets = bullets.filter(b => b !== bullet);  // Remove the bullet from the local array
+    }
+});
+
+
+
+
+function destroyBullet(bullet) {
+    if (!bullet || !bullet.body) return;
+
+    bullet.destroy();
+    bullets = bullets.filter(b => b !== bullet);
+}
 
 function createOtherPlayer(id, data) {
     const other = this.physics.add.sprite(data.x, data.y, 'player');
@@ -286,6 +490,8 @@ window.addEventListener('focus', () => {
     if (isFrozen) {
         isFrozen = false;
         socket.emit('tabIn');
+        socket.emit('requestHP');
     }
 });
+
 

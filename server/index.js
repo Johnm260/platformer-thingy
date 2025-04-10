@@ -9,6 +9,7 @@ const io = socketIo(server);
 app.use(express.static('client'));
 
 let players = {};
+let bullets = [];
 
 io.on('connection', (socket) => {
     // When a new player joins
@@ -38,6 +39,38 @@ io.on('connection', (socket) => {
             name
         });
     });
+    
+     socket.on('shootBullet', ({direction, id}) => {
+        console.log(id);
+        const shooter = players[socket.id];
+        
+        if (!shooter) return;
+        
+        const bullet = {
+            id: socket.id + '-' + Date.now(),
+            shooterId: socket.id,
+            x: shooter.x,
+            y: shooter.y,
+            dir: direction,
+            speed: 500
+        };
+        bullets.push(bullet);
+        io.emit('bulletFired', bullet, id);
+    });
+    
+
+    socket.on('bulletHitPlayer', (bulletId, targetSocketId) => {
+        const bulletIndex = bullets.findIndex(b => b.id === bulletId);
+        
+        const bullet = bullets[bulletIndex];
+        bullets.splice(bulletIndex, 1);  // Remove the bullet from the server array
+
+        // Emit to all players (broadcast) to destroy the bullet
+        io.emit('destroyBullet', bulletId);  // Broadcast to all players
+    });
+
+
+
 
     // Handle player movement and physics updates for other players
     socket.on('playerMove', (data) => {
@@ -106,17 +139,39 @@ io.on('connection', (socket) => {
         io.emit("chatMessage", { name, message, color , isConsole });
     });
     
-    socket.on("takeDamage", (damage) => {
-        io.emit("tookDamage", { id: socket.id, hp: players[socket.id].hp});
+    socket.on("takeDamage", (damage, origin) => {
+        io.emit("tookDamage", { dmg: damage, id: socket.id, hp: players[socket.id].hp, origin});
         players[socket.id].hp -= damage;
-        console.log(players[socket.id].name, "took", damage, "damage!\n", "They're now at", players[socket.id].hp, "health!");
+        console.log(players[socket.id].name, "took", damage, "damage from", origin, "!\n", "They're now at", players[socket.id].hp, "health!");
         if (players[socket.id].hp <= 0) {
-            console.log(players[socket.id].name, "died!");
+            console.log(players[socket.id].name, "died to", origin, "!");
         }
     });
+    
+    socket.on("dealDamage", ({ targetId, amount }) => {
+        if (players[targetId]) {
+            players[targetId].hp -= amount;
+
+            io.to(targetId).emit("updateHP", players[targetId].hp); // Sync hp to client
+            io.emit("tookDamage", { id: targetId, hp: players[targetId].hp, origin: socket.id });
+
+            console.log(players[targetId].name, "took", amount, "dmg from", (players[socket.id].name || "console" ));
+            
+            if (players[targetId].hp <= 0) {
+                console.log(players[targetId].name, " was killed by ", (players[socket.id].name || "console" ));
+            }
+        }
+    });
+    
+    socket.on('requestHP', () => {
+        if (players[socket.id]) {
+            socket.emit('syncHP', players[socket.id].hp);
+        }
+    });
+
+
 });
 
 server.listen(3000, () => {
     console.log('your server is open at http://localhost:3000');
 });
-
