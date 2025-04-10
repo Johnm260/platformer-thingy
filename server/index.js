@@ -20,6 +20,7 @@ io.on('connection', (socket) => {
             acceleration: { x: 0, y: 0 },
             frozen: false,
             name,
+            hp: 100,
             color
         };
 
@@ -100,9 +101,18 @@ io.on('connection', (socket) => {
     });
 
     // Handle chat messages
-    socket.on("chatMessage", ({ name, message }) => {
+    socket.on("chatMessage", ({ name, message , isConsole }) => {
         const color = players[socket.id]?.color || { red: 255, green: 255, blue: 255 };
-        io.emit("chatMessage", { name, message, color });
+        io.emit("chatMessage", { name, message, color , isConsole });
+    });
+    
+    socket.on("takeDamage", (damage) => {
+        io.emit("tookDamage", { id: socket.id, hp: players[socket.id].hp});
+        players[socket.id].hp -= damage;
+        console.log(players[socket.id].name, "took", damage, "damage!\n", "They're now at", players[socket.id].hp, "health!");
+        if (players[socket.id].hp <= 0) {
+            console.log(players[socket.id].name, "died!");
+        }
     });
 });
 

