@@ -100,7 +100,18 @@ function create() {
     this.input.keyboard.on('keydown-E', () => {
         if (isFrozen || isTyping || !canShoot) return;
 
-        shootBulletTowardsMouse();
+        var data = shootBulletTowardsMouse();
+        var bulletDirection = data[0];
+        var id = data[1];
+        var bulletTint = data[2];
+        var newData = {
+            shooterId: localPlayerId,
+            x: localPlayer.x,
+            y: localPlayer.y,
+            dir: bulletDirection,
+            speed: 500,
+        };
+        createBullet(newData, id, bulletTint);
         canShoot = false;
 
         setTimeout(() => {
@@ -123,6 +134,7 @@ function create() {
         let id = generateBulletId();  // Ensure unique bullet IDs
         const tint = playerTint;
         socket.emit('shootBullet', { direction: normalizedDirection, id, tint});
+        return [normalizedDirection, id, tint];
     }
 
 
@@ -228,39 +240,41 @@ function create() {
     });
     
     socket.on('bulletFired', (bulletData, id, tint) => {
-        const bullet = game.scene.scenes[0].bulletGroup.create(bulletData.x, bulletData.y, 'arrow');
-        bullet.setSize(6, 26);
-        bullet.setDisplaySize(28, 8);
-        bullet.setTint(tint);
-        bullet.setCollideWorldBounds(true);
-        bullet.body.onWorldBounds = true;
-        bullet.body.allowGravity = true;
+        if (bulletData.shooterId != localPlayerId){
+            const bullet = game.scene.scenes[0].bulletGroup.create(bulletData.x, bulletData.y, 'arrow');
+            bullet.setSize(6, 26);
+            bullet.setDisplaySize(28, 8);
+            bullet.setTint(tint);
+            bullet.setCollideWorldBounds(true);
+            bullet.body.onWorldBounds = true;
+            bullet.body.allowGravity = true;
 
-        // Generate a unique ID for the bullet
-        bullet.id = id;
+            // Generate a unique ID for the bullet
+            bullet.id = id;
 
-        bullet.body.velocity.x = bulletData.dir.x * 800;
-        bullet.body.velocity.y = bulletData.dir.y * 800;    
-        bullet.shooterId = bulletData.shooterId;
-        
-        updateBulletRotation(bullet);
-        
-        // Destroy bullet when it hits a platform
-        game.scene.scenes[0].physics.add.collider(bullet, platforms, () => {
-            bullet.destroy();
-            bullets = bullets.filter(b => b !== bullet);
-            socket.emit('destroyBullet', bullet.id);
-        });
+            bullet.body.velocity.x = bulletData.dir.x * 800;
+            bullet.body.velocity.y = bulletData.dir.y * 800;    
+            bullet.shooterId = bulletData.shooterId;
+            
+            updateBulletRotation(bullet);
+            
+            // Destroy bullet when it hits a platform
+            game.scene.scenes[0].physics.add.collider(bullet, platforms, () => {
+                bullet.destroy();
+                bullets = bullets.filter(b => b !== bullet);
+                socket.emit('destroyBullet', bullet.id);
+            });
 
-        // Handle bullet out of bounds
-        bullet.body.world.on('worldbounds', (body) => {
-            if (body.gameObject === bullet) {
-                destroyBullet(bullet);
-                socket.emit('bulletOutOfBounds', bullet.id);
-            }
-        });
+            // Handle bullet out of bounds
+            bullet.body.world.on('worldbounds', (body) => {
+                if (body.gameObject === bullet) {
+                    destroyBullet(bullet);
+                    socket.emit('bulletOutOfBounds', bullet.id);
+                }
+            });
 
-        bullets.push(bullet);
+            bullets.push(bullet);
+        }
     });
 
 
@@ -343,6 +357,41 @@ function drawHPBar(ctx, x, y, hp, maxHP = 100) {
 }
 
 
+function createBullet(bulletData, id, tint){
+    const bullet = game.scene.scenes[0].bulletGroup.create(bulletData.x, bulletData.y, 'arrow');
+    bullet.setSize(6, 26);
+    bullet.setDisplaySize(28, 8);
+    bullet.setTint(tint);
+    bullet.setCollideWorldBounds(true);
+    bullet.body.onWorldBounds = true;
+    bullet.body.allowGravity = true;
+
+    // Generate a unique ID for the bullet
+    bullet.id = id;
+
+    bullet.body.velocity.x = bulletData.dir.x * 800;
+    bullet.body.velocity.y = bulletData.dir.y * 800;    
+    bullet.shooterId = bulletData.shooterId;
+    
+    updateBulletRotation(bullet);
+    
+    // Destroy bullet when it hits a platform
+    game.scene.scenes[0].physics.add.collider(bullet, platforms, () => {
+        bullet.destroy();
+        bullets = bullets.filter(b => b !== bullet);
+        socket.emit('destroyBullet', bullet.id);
+    });
+
+    // Handle bullet out of bounds
+    bullet.body.world.on('worldbounds', (body) => {
+        if (body.gameObject === bullet) {
+            destroyBullet(bullet);
+            socket.emit('bulletOutOfBounds', bullet.id);
+        }
+    });
+
+    bullets.push(bullet);
+}
 
 function update() {
     if (localPlayer) {
