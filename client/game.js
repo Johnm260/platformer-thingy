@@ -489,6 +489,7 @@ function update() {
                     const target = otherPlayers[id];
                     if (Phaser.Geom.Intersects.RectangleToRectangle(bullet.getBounds(), target.getBounds())) {                    
     // Emit bullet hit to the server
+                        if (bullet.shooterId != target.id){
                         socket.emit('bulletHitPlayer', bullet.id);
 
                         // Deal damage to the player
@@ -498,6 +499,7 @@ function update() {
                         destroyBullet(bullet);
                         bullets.splice(index, 1); // Remove bullet from the array
                         break;
+                        }
                     }
 
                 }
