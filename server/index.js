@@ -60,13 +60,15 @@ io.on('connection', (socket) => {
     
 
     socket.on('bulletHitPlayer', (bulletId, targetSocketId) => {
-        const bulletIndex = bullets.findIndex(b => b.id === bulletId);
-        
-        const bullet = bullets[bulletIndex];
-        bullets.splice(bulletIndex, 1);  // Remove the bullet from the server array
+        if (targetSocketId != socket.id){
+            const bulletIndex = bullets.findIndex(b => b.id === bulletId);
+            
+            const bullet = bullets[bulletIndex];
+            bullets.splice(bulletIndex, 1);  // Remove the bullet from the server array
 
-        // Emit to all players (broadcast) to destroy the bullet
-        io.emit('destroyBullet', bulletId);  // Broadcast to all players
+            // Emit to all players (broadcast) to destroy the bullet
+            io.emit('destroyBullet', bulletId);  // Broadcast to all players
+        }
     });
 
 
