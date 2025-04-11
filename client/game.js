@@ -29,7 +29,7 @@ const config = {
     physics: {
         default: 'arcade',
         arcade: {
-            gravity: { y: 1250 },
+            gravity: { y: 750 },
             debug: false
         }
     },
@@ -463,7 +463,7 @@ function update() {
         }
 
         if (WKey.isDown && localPlayer.body.touching.down) {
-            localPlayer.setVelocityY(-650);
+            localPlayer.setVelocityY(-550);
         }
 
         // Send position, velocity, and local player acceleration to the server

@@ -89,7 +89,7 @@ io.on('connection', (socket) => {
 
             // Apply gravity to other players' acceleration (only on the server)
             // Gravity calculation can be adjusted as needed
-            const gravity = 1250;  // Adjust gravity as needed
+            const gravity = 1000;  // Adjust gravity as needed
 
             player.velocity.y += gravity * 0.016;  // Simulating gravity over 16ms per frame
 
