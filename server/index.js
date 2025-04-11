@@ -68,6 +68,8 @@ io.on('connection', (socket) => {
 
             // Emit to all players (broadcast) to destroy the bullet
             io.emit('destroyBullet', bulletId);  // Broadcast to all players
+        } else {
+            console.log("stop hitting yourself!");
         }
     });
 
@@ -108,7 +110,7 @@ io.on('connection', (socket) => {
     // Handle freezing/unfreezing players
     socket.on('playerFrozen', (data) => {
         if (players[data.id]) {
-            players[data.id].frozen = data.frozen;
+            players[data.id].frozen = data.frozen;  
         }
     });
 
