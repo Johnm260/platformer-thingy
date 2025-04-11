@@ -40,8 +40,8 @@ io.on('connection', (socket) => {
         });
     });
     
-     socket.on('shootBullet', ({direction, id}) => {
-        console.log(id);
+     socket.on('shootBullet', ({direction, id, tint}) => {
+        console.log(tint);
         const shooter = players[socket.id];
         
         if (!shooter) return;
@@ -52,10 +52,10 @@ io.on('connection', (socket) => {
             x: shooter.x,
             y: shooter.y,
             dir: direction,
-            speed: 500
+            speed: 500,
         };
         bullets.push(bullet);
-        io.emit('bulletFired', bullet, id);
+        io.emit('bulletFired', bullet, id, tint);
     });
     
 
@@ -140,12 +140,12 @@ io.on('connection', (socket) => {
     });
     
     socket.on("takeDamage", (damage, origin) => {
-        io.emit("tookDamage", { dmg: damage, id: socket.id, hp: players[socket.id].hp, origin});
         players[socket.id].hp -= damage;
         console.log(players[socket.id].name, "took", damage, "damage from", origin, "!\n", "They're now at", players[socket.id].hp, "health!");
         if (players[socket.id].hp <= 0) {
             console.log(players[socket.id].name, "died to", origin, "!");
         }
+        io.emit("tookDamage", { dmg: damage, id: socket.id, hp: players[socket.id].hp, origin});
     });
     
     socket.on("dealDamage", ({ targetId, amount }) => {
@@ -159,6 +159,7 @@ io.on('connection', (socket) => {
             
             if (players[targetId].hp <= 0) {
                 console.log(players[targetId].name, " was killed by ", (players[socket.id].name || "console" ));
+                socket.emit("killedPlayer", socket.id);
             }
         }
     });
@@ -171,7 +172,8 @@ io.on('connection', (socket) => {
 
 
 });
-
+    
+    
 server.listen(3000, () => {
     console.log('your server is open at http://localhost:3000');
 });
