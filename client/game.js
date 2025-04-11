@@ -485,10 +485,12 @@ function update() {
     if (bullets.length > 0) {    
         bullets.forEach((bullet, index) => {
             if (!bullet || !bullet.active) return;
+            if (bullet.shooterId != localPlayerId) return;
                 for (let id in otherPlayers) {
                     const target = otherPlayers[id];
                     if (Phaser.Geom.Intersects.RectangleToRectangle(bullet.getBounds(), target.getBounds())) {                    
     // Emit bullet hit to the server
+                    console.log(bullet.shooterId);
                         if (bullet.shooterId != target.id){
                         socket.emit('bulletHitPlayer', bullet.id);
 
