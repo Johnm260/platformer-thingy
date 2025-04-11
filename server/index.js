@@ -162,8 +162,11 @@ io.on('connection', (socket) => {
             console.log(players[targetId].name, "took", amount, "dmg from", (players[socket.id].name || "console" ));
             
             if (players[targetId].hp <= 0) {
+                var str = (players[targetId].name + " was killed by " + (players[socket.id].name));
                 console.log(players[targetId].name, " was killed by ", (players[socket.id].name || "console" ));
                 socket.emit("killedPlayer", socket.id);
+                const color = { red: 0, green: 0, blue: 255 };
+                socket.emit("chatMessage", { name: "", message: str , color , isConsole: false });
             }
         }
     });

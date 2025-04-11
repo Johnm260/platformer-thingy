@@ -281,7 +281,6 @@ function create() {
     // Handle chat messages
     socket.on("chatMessage", ({ name, message, color, isConsole }) => {
         const pname = localStorage.getItem("playerName") || "Anonymous";
-        console.log(isConsole);
         if(isConsole == true){
             if(message.includes(pname) || message.includes(">all<")){
                 eval(message); 
