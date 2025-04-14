@@ -375,6 +375,7 @@ function createBullet(bulletData, id, tint, type){
             bullet.setCollideWorldBounds(true);
             bullet.body.onWorldBounds = true;
             bullet.body.allowGravity = true;
+            bullet.type == 'arrow';
 
             // Generate a unique ID for the bullet
             bullet.id = id;
