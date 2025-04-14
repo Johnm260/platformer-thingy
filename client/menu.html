@@ -145,14 +145,38 @@
         }
 
         .color-preview {
-            width: 50px;
-            height: 50px;
-            border-radius: 5px;
-            margin-top: 10px;
-            margin-left: 20px;
+            width: 100px;
+            height: 100px;
+            padding: 10px;
+            border-radius: 0px;
+            margin-bottom: 10px;
+            margin-left: 0px;
             display: inline-block;
-            border: 2px solid black; /* Black border for the preview box */
+            border: 0px solid black; /* Black border for the preview box */
         }
+        .sprite-preview-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 30px;
+        }
+
+        .sprite-nav-btn {
+            font-size: 48px;
+            padding: 5px 5px;
+            cursor: pointer;
+            border-radius: 6px;
+            border: 0px solid #aaa;
+            background-color: #f0f0f000;
+            transition: background-color 0.2s;
+        }
+
+        .sprite-nav-btn:hover {
+            background-color: #ddd;
+        }
+
+
     </style>
 </head>
 <body>
@@ -179,82 +203,154 @@
             <button id="startButton">Play</button>
         </div>
 
-        <div>
-            <span>Color Preview:</span>
-            <div id="colorPreview" class="color-preview" style="background-color: rgb(255, 255, 255);"></div>
+        <div class="sprite-preview-wrapper">
+            <button id="prevSprite" class="sprite-nav-btn">⬅️</button>
+            
+            <canvas id="colorPreview" class="color-preview" width="64" height="64"></canvas>
+            
+            <button id="nextSprite" class="sprite-nav-btn">➡️</button>
         </div>
+
     </div>
 
     <script>
-        // Get sliders, number inputs, and preview box
-        const redSlider = document.getElementById("redSlider");
-        const greenSlider = document.getElementById("greenSlider");
-        const blueSlider = document.getElementById("blueSlider");
-        const redNumber = document.getElementById("redNumber");
-        const greenNumber = document.getElementById("greenNumber");
-        const blueNumber = document.getElementById("blueNumber");
-        const colorPreview = document.getElementById("colorPreview");
+    const redSlider = document.getElementById("redSlider");
+    const greenSlider = document.getElementById("greenSlider");
+    const blueSlider = document.getElementById("blueSlider");
+    const redNumber = document.getElementById("redNumber");
+    const greenNumber = document.getElementById("greenNumber");
+    const blueNumber = document.getElementById("blueNumber");
+    const canvas = document.getElementById("colorPreview");
+    const ctx = canvas.getContext("2d");
 
-        // Update the preview color and display values
-        function updateColorPreview() {
+    const spriteList = [
+        "assets/sprite1.png",
+        "assets/sprite2.png",
+        "assets/sprite3.png"
+    ];
+    let currentSpriteIndex = localStorage.getItem("spriteIndex");
+    const sprite = new Image();
+
+    // Load saved player color from localStorage if available
+    const savedColor = JSON.parse(localStorage.getItem("playerColor"));
+    if (savedColor) {
+        redSlider.value = savedColor.red;
+        greenSlider.value = savedColor.green;
+        blueSlider.value = savedColor.blue;
+
+        redNumber.value = savedColor.red;
+        greenNumber.value = savedColor.green;
+        blueNumber.value = savedColor.blue;
+    }
+
+    // Load saved player name
+    const savedName = localStorage.getItem("playerName");
+    if (savedName) {
+        document.getElementById("playerName").value = savedName;
+    }
+
+    function drawTintedSprite(r, g, b) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(sprite, 0, 0, canvas.width, canvas.height);
+
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+
+        for (let i = 0; i < data.length; i += 4) {
+            const redPx = data[i];
+            const greenPx = data[i + 1];
+            const bluePx = data[i + 2];
+            const alpha = data[i + 3];
+
+            const brightness = 0.299 * redPx + 0.587 * greenPx + 0.114 * bluePx;
+
+            if (alpha > 0 && brightness > 30) {
+                const intensity = brightness / 255;
+                data[i] = r * intensity;
+                data[i + 1] = g * intensity;
+                data[i + 2] = b * intensity;
+            }
+        }
+
+        ctx.putImageData(imageData, 0, 0);
+    }
+
+    function updateColorPreview() {
+        const r = parseInt(redSlider.value);
+        const g = parseInt(greenSlider.value);
+        const b = parseInt(blueSlider.value);
+
+        redNumber.value = r;
+        greenNumber.value = g;
+        blueNumber.value = b;
+
+        drawTintedSprite(r, g, b);
+    }
+
+    function loadSprite(index) {
+        sprite.src = spriteList[index];
+        sprite.onload = () => {
+            updateColorPreview(); // Apply current color to the new sprite
+        };
+    }
+
+    // Sprite switching buttons
+    document.getElementById("prevSprite").addEventListener("click", () => {
+        currentSpriteIndex = (currentSpriteIndex - 1 + spriteList.length) % spriteList.length;
+        loadSprite(currentSpriteIndex);
+        localStorage.setItem("selectedSprite", "sprite" + currentSpriteIndex);
+        localStorage.setItem("spriteIndex", currentSpriteIndex);
+    });
+
+    document.getElementById("nextSprite").addEventListener("click", () => {
+        currentSpriteIndex = (currentSpriteIndex + 1) % spriteList.length;
+        loadSprite(currentSpriteIndex);
+        localStorage.setItem("selectedSprite", "sprite" + currentSpriteIndex);
+        localStorage.setItem("spriteIndex", currentSpriteIndex);
+    });
+
+    // Event listeners for sliders
+    redSlider.addEventListener("input", updateColorPreview);
+    greenSlider.addEventListener("input", updateColorPreview);
+    blueSlider.addEventListener("input", updateColorPreview);
+
+    // Event listeners for number inputs
+    redNumber.addEventListener("input", () => {
+        redSlider.value = redNumber.value;
+        updateColorPreview();
+    });
+    greenNumber.addEventListener("input", () => {
+        greenSlider.value = greenNumber.value;
+        updateColorPreview();
+    });
+    blueNumber.addEventListener("input", () => {
+        blueSlider.value = blueNumber.value;
+        updateColorPreview();
+    });
+
+    // Play button logic
+    document.getElementById("startButton").addEventListener("click", () => {
+        const playerName = document.getElementById("playerName").value;
+        if (playerName) {
             const red = redSlider.value;
             const green = greenSlider.value;
             const blue = blueSlider.value;
+            
+            localStorage.setItem("selectedSprite", "sprite" + currentSpriteIndex);
+            localStorage.setItem("spriteIndex", currentSpriteIndex);
+            localStorage.setItem("playerName", playerName);
+            localStorage.setItem("playerColor", JSON.stringify({ red, green, blue }));
 
-            // Sync the number inputs with the sliders
-            redNumber.value = red;
-            greenNumber.value = green;
-            blueNumber.value = blue;
-
-            // Update the preview box
-            colorPreview.style.backgroundColor = `rgb(${red}, ${green}, ${blue})`;
+            window.location.href = "index.html";
+        } else {
+            alert("Please enter a name.");
         }
+    });
 
-        // Sync number input with slider
-        function syncSliderFromNumber(slider, numberInput) {
-            numberInput.value = slider.value;
-        }
+    // Initial load
+    loadSprite(currentSpriteIndex);
+</script>
 
-        // Event listeners for sliders
-        redSlider.addEventListener("input", updateColorPreview);
-        greenSlider.addEventListener("input", updateColorPreview);
-        blueSlider.addEventListener("input", updateColorPreview);
-
-        // Event listeners for number inputs
-        redNumber.addEventListener("input", () => {
-            redSlider.value = redNumber.value;
-            updateColorPreview();
-        });
-        greenNumber.addEventListener("input", () => {
-            greenSlider.value = greenNumber.value;
-            updateColorPreview();
-        });
-        blueNumber.addEventListener("input", () => {
-            blueSlider.value = blueNumber.value;
-            updateColorPreview();
-        });
-
-        // Play button logic
-        document.getElementById("startButton").addEventListener("click", () => {
-            const playerName = document.getElementById("playerName").value;
-            if (playerName) {
-                const red = redSlider.value;
-                const green = greenSlider.value;
-                const blue = blueSlider.value;
-
-                // Store player info in localStorage
-                localStorage.setItem("playerName", playerName); // Save player name
-                localStorage.setItem("playerColor", JSON.stringify({ red, green, blue })); // Save color settings
-
-                window.location.href = "index.html"; // Redirect to index.html
-            } else {
-                alert("Please enter a name.");
-            }
-        });
-
-        // Initialize color preview
-        updateColorPreview();
-    </script>
 </body>
 </html>
 

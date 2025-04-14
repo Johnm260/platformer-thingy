@@ -9,6 +9,9 @@ let chatInput
 let chatMessages;
 let playerTint;
 let localPlayerId;
+let shootCooldown;
+let selectedSprite = localStorage.getItem('selectedSprite') || 'sprite1';
+console.log(selectedSprite);
 
 let bullets = [];
 let otherPlayers = {};
@@ -40,7 +43,9 @@ const config = {
 const game = new Phaser.Game(config);
 
 function preload() {
-    this.load.image('player', 'assets/test_sprite.png');
+    this.load.image('sprite0', 'assets/sprite1.png');
+    this.load.image('sprite1', 'assets/sprite2.png');
+    this.load.image('sprite2', 'assets/sprite3.png');
     this.load.image('platform', 'assets/platform.png');
     this.load.image('platform2', 'assets/platform2.png');
     this.load.image('arrow', 'assets/arrow.png');
@@ -63,10 +68,10 @@ function create() {
     const color = JSON.parse(localStorage.getItem("playerColor")) || { red: 255, green: 255, blue: 255 };
     const tint = rgbToHexTint(color);
     let canShoot = true;
-    const shootCooldown = 500; // 1000 ms = 1 second
+    shootCooldown = 500; // 1000 ms = 1 second
 
-    
-    localPlayer = this.physics.add.sprite(100, 450, 'player');
+    localPlayer = this.physics.add.sprite(100, 450, selectedSprite);
+    localPlayer.scale = 0.1;
 
     localPlayer.setCollideWorldBounds(true);
     localPlayer.setTint(tint);
@@ -183,7 +188,13 @@ function create() {
         e.stopPropagation(); // Prevent Phaser from interfering
     });
 
-    socket.emit('newPlayer', { name, color });
+    // Emit the new player event with the selected sprite
+    socket.emit('newPlayer', {
+        name,          // Use the already defined `name` variable
+        color,         // Use the already defined `color` variable
+        sprite: selectedSprite // Only add the selected sprite
+    });
+
 
     // Ensure players are initialized before using them
     socket.on('init', (data) => {
@@ -201,11 +212,13 @@ function create() {
         }
     });
 
-    socket.on('newPlayer', (playerData) => {
-        if (!otherPlayers[playerData.id]) {
-            createOtherPlayer.call(this, playerData.id, playerData);
-        }
-    });
+    // Client-side: When a new player is added
+        socket.on('newPlayer', (playerData) => {
+            if (!otherPlayers[playerData.id]) {
+                createOtherPlayer.call(this, playerData.id, playerData);
+            }
+        });
+
 
     socket.on('playerMoved', (playerData) => {
         if (otherPlayers[playerData.id]) {
@@ -605,24 +618,22 @@ function destroyBullet(bullet) {
     bullets = bullets.filter(b => b !== bullet);
 }
 
-function createOtherPlayer(id, data) {
-    const other = this.physics.add.sprite(data.x, data.y, 'player');
-    other.setCollideWorldBounds(true);
-    other.setTint(rgbToHexTint(data.color || { red: 255, green: 255, blue: 255 }));
-    this.physics.add.collider(other, platforms);
+function createOtherPlayer(id, playerData) {
+    const spriteKey = playerData.sprite || 'sprite1'; // fallback just in case
 
-    // Store custom data
-    other.hp = data.hp || 100;
+    const otherPlayer = game.scene.scenes[0].physics.add.sprite(playerData.x, playerData.y, spriteKey);
+    otherPlayer.setCollideWorldBounds(true);
+    otherPlayer.setTint(rgbToHexTint(playerData.color));
+    otherPlayer.scale = 0.1;
+    otherPlayer.hp = 100;
 
-    // Create HP bar graphics
-    const hpBarBg = this.add.graphics();
-    const hpBar = this.add.graphics();
+    // Add health bar graphics
+    otherPlayer.hpBarBg = game.scene.scenes[0].add.graphics();
+    otherPlayer.hpBar = game.scene.scenes[0].add.graphics();
 
-    // Save to player object
-    other.hpBarBg = hpBarBg;
-    other.hpBar = hpBar;
+    game.scene.scenes[0].physics.add.collider(otherPlayer, platforms);
 
-    otherPlayers[id] = other;
+    otherPlayers[id] = otherPlayer;
 }
 
 function rgbToHexString({ red, green, blue }) {
@@ -663,4 +674,4 @@ window.addEventListener('focus', () => {
         socket.emit('requestHP');
     }
 });
-
+        

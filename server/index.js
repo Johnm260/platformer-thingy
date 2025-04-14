@@ -12,33 +12,37 @@ let players = {};
 let bullets = [];
 
 io.on('connection', (socket) => {
-    // When a new player joins
-    socket.on('newPlayer', ({ name, color }) => {
-        players[socket.id] = {
-            x: 100,
-            y: 450,
-            velocity: { x: 0, y: 0 },
-            acceleration: { x: 0, y: 0 },
-            frozen: false,
-            name,
-            hp: 100,
-            color
-        };
+        socket.on('newPlayer', ({ name, color, sprite }) => {
+            players[socket.id] = {
+                x: 100,
+                y: 450,
+                velocity: { x: 0, y: 0 },
+                acceleration: { x: 0, y: 0 },
+                frozen: false,
+                name,
+                hp: 100,
+                color,
+                sprite // Store the selected sprite
+            };
 
-        console.log('A user connected,', socket.id, 'username:', players[socket.id].name);
+    console.log('A user connected:', socket.id, 'username:', players[socket.id].name, 'sprite:', players[socket.id].sprite);
 
-        // Emit the 'init' event to the newly connected player
-        socket.emit('init', { players, id: socket.id });
+    // Emit the 'init' event to the newly connected player
+    socket.emit('init', { players, id: socket.id });
 
-        // Notify other players about the new player
-        socket.broadcast.emit('newPlayer', {
+    socket.broadcast.emit('newPlayer', {
             id: socket.id,
             x: players[socket.id].x,
             y: players[socket.id].y,
             color: players[socket.id].color,
-            name
+            name,
+            sprite: players[socket.id].sprite // Include the sprite when notifying others
         });
-    });
+   
+});
+
+
+
     
      socket.on('shootBullet', ({direction, id, tint}) => {
         console.log(tint);
