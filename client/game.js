@@ -460,7 +460,7 @@ function createExplosion(x,y,shooter){
     
     setTimeout(() => {
         explosion.destroy();
-    }, 1000);
+    }, 300);
 
 }
 
