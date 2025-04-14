@@ -34,6 +34,7 @@ io.on('connection', (socket) => {
             id: socket.id,
             x: players[socket.id].x,
             y: players[socket.id].y,
+            hp: players[socket.id].hp,
             color: players[socket.id].color,
             name,
             sprite: players[socket.id].sprite // Include the sprite when notifying others
@@ -169,6 +170,7 @@ io.on('connection', (socket) => {
                 var str = (players[targetId].name + " was killed by " + (players[socket.id].name));
                 console.log(players[targetId].name, " was killed by ", (players[socket.id].name || "console" ));
                 socket.emit("killedPlayer", socket.id);
+                players[socket.id].hp = 100;
                 const color = { red: 0, green: 0, blue: 255 };
                 socket.emit("chatMessage", { name: "", message: str , color , isConsole: false });
             }

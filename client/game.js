@@ -605,7 +605,7 @@ socket.on("killedPlayer", (origin) => {
     console.log(origin);
     console.log(localPlayerId);
     if (localPlayerId == origin){
-        takeDmg(100 - localPlayer.hp);
+        localPlayer.hp = 100;
     }
 });
 
@@ -625,7 +625,7 @@ function createOtherPlayer(id, playerData) {
     otherPlayer.setCollideWorldBounds(true);
     otherPlayer.setTint(rgbToHexTint(playerData.color));
     otherPlayer.scale = 0.1;
-    otherPlayer.hp = 100;
+    otherPlayer.hp = playerData.hp;
 
     // Add health bar graphics
     otherPlayer.hpBarBg = game.scene.scenes[0].add.graphics();
