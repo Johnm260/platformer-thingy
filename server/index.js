@@ -26,7 +26,7 @@ io.on('connection', (socket) => {
             };
 
     console.log('A user connected:', socket.id, 'username:', players[socket.id].name, 'sprite:', players[socket.id].sprite);
-        var str = players[socket.id].name + "has connected!";
+        var str = players[socket.id].name + " has connected!";
         socket.emit("chatMessage", { name: "", message: str , color , isConsole: false });
     // Emit the 'init' event to the newly connected player
     socket.emit('init', { players, id: socket.id });
@@ -143,7 +143,7 @@ io.on('connection', (socket) => {
         console.log('user disconnected', socket.id);
         delete players[socket.id];
         socket.broadcast.emit('playerDisconnected', socket.id);
-        var str = players[socket.id].name + "has disconnected!";
+        var str = players[socket.id].name + " has disconnected!";
         socket.emit("chatMessage", { name: "", message: str , color , isConsole: false });
     });
 
