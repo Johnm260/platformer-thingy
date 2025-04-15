@@ -338,7 +338,7 @@
             const green = greenSlider.value;
             const blue = blueSlider.value;
 
-            if (currentSpriteIndex == NaN){
+            if (!(currentSpriteIndex > -1)){
                 currentSpriteIndex = 0;
             }
             localStorage.setItem("selectedSprite", "sprite" + currentSpriteIndex);
