@@ -173,8 +173,10 @@ io.on('connection', (socket) => {
             io.to(targetId).emit("updateHP", players[targetId].hp); // Sync hp to client
             io.emit("tookDamage", { id: targetId, hp: players[targetId].hp, origin: socket.id });
 
+            if (players[targetId].name && players[socket.id].name){
             console.log(players[targetId].name, "took", amount, "dmg from", (players[socket.id].name || "console" ));
-            
+            }
+                
             if (players[targetId].hp <= 0) {
                 var str = (players[targetId].name + " was killed by " + (players[socket.id].name));
                 console.log(players[targetId].name, " was killed by ", (players[socket.id].name || "console" ));
