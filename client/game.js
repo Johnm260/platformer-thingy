@@ -146,7 +146,7 @@ function create() {
                 dir: bulletDirection,
                 speed: 200,
             };
-            shootCooldown = 1000;
+            shootCooldown = 2000;
             createBullet(newData, id, bulletTint, 'bomb');
             canShoot = false;
 
@@ -193,7 +193,7 @@ function create() {
                 dir: bulletDirection,
                 speed: 200,
             };
-            shootCooldown = 1000;
+            shootCooldown = 2000;
             createBullet(newData, id, bulletTint, 'bomb');
             canShoot = false;
 
