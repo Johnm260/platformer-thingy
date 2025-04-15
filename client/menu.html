@@ -337,7 +337,10 @@
             const red = redSlider.value;
             const green = greenSlider.value;
             const blue = blueSlider.value;
-            
+
+            if (currentSpriteIndex == NaN){
+                currentSpriteIndex = 0;
+            }
             localStorage.setItem("selectedSprite", "sprite" + currentSpriteIndex);
             localStorage.setItem("spriteIndex", currentSpriteIndex);
             localStorage.setItem("playerName", playerName);
