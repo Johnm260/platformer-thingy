@@ -24,6 +24,8 @@ let isTyping = false; // Track if the user is typing
 var bombData = {size: 16, displaySize: 32, v: 500};
 var shotgunData = {size: 4, displaySize: 8, v: 1500};
 var explosionData = {size: 128, displaySize: 128};
+var knifeData = {size: 12, displaySize: 24, v: 1000};
+var ballData = {size: 32, displaySize: 32, v: 750};
 
 // Create the game instance with Phaser 3
 const config = {
@@ -60,6 +62,8 @@ function preload() {
     this.load.image('arrow', 'assets/arrow.png');
     this.load.image('bomb', 'assets/bomb.png');
     this.load.image('shotgun', 'assets/pellet.png');
+    this.load.image('knife', 'assets/knife.png');
+    this.load.image('ball', 'assets/ball.png');
     this.load.image('explosion', 'assets/explosion.png');
 }
 
@@ -183,11 +187,55 @@ function create() {
                             dir: bulletDirection,
                             speed: 200,
                         };
-                        console.log(newData.dir);
                         shootCooldown = 1000;
                         createBullet(newData, id, bulletTint, 'shotgun');
                         canShoot = false;
                     }
+                setTimeout(() => {
+                    canShoot = true;
+                }, shootCooldown);
+            }
+            if (type == 'knife'){
+                if (isFrozen || isTyping || !canShoot) return;
+                    var data = shootBulletTowardsMouse('shotgun');
+                    var bulletDirection = data[0];
+                    var offset = (Math.random() * (0.05) - 0.025);
+                    bulletDirection.x += offset;
+                    bulletDirection.y -= offset;
+                    var id = data[1];
+                    var bulletTint = data[2];
+                    var newData = {
+                        shooterId: localPlayerId,
+                        x: localPlayer.x,
+                        y: localPlayer.y,
+                        dir: bulletDirection,
+                        speed: 200,
+                    };
+                    shootCooldown = 150;
+                    createBullet(newData, id, bulletTint, 'knife');
+                    canShoot = false;
+                setTimeout(() => {
+                    canShoot = true;
+                }, shootCooldown);
+            }
+            if (type == 'ball'){
+                if (isFrozen || isTyping || !canShoot) return;
+
+                var data = shootBulletTowardsMouse('ball');
+                var bulletDirection = data[0];
+                var id = data[1];
+                var bulletTint = data[2];
+                var newData = {
+                    shooterId: localPlayerId,
+                    x: localPlayer.x,
+                    y: localPlayer.y,
+                    dir: bulletDirection,
+                    speed: 200,
+                };
+                shootCooldown = 1000;
+                createBullet(newData, id, bulletTint, 'ball');
+                canShoot = false;
+
                 setTimeout(() => {
                     canShoot = true;
                 }, shootCooldown);
@@ -366,8 +414,8 @@ function createBullet(bulletData, id, tint, type){
             bullet.setSize(6, 26);
             bullet.setDisplaySize(28, 8);
             bullet.setTint(tint);
-            bullet.setCollideWorldBounds(true);
-            bullet.body.onWorldBounds = true;
+            bullet.setCollideWorldBounds(false);
+            bullet.body.onWorldBounds = false;
             bullet.body.allowGravity = true;
             bullet.type = 'arrow';
 
@@ -386,22 +434,14 @@ function createBullet(bulletData, id, tint, type){
                 bullets = bullets.filter(b => b !== bullet);
                 socket.emit('destroyBullet', bullet.id);
             });
-
-            // Handle bullet out of bounds
-            bullet.body.world.on('worldbounds', (body) => {
-                if (body.gameObject === bullet) {
-                    destroyBullet(bullet);
-                    socket.emit('bulletOutOfBounds', bullet.id);
-                }
-            });
             bullets.push(bullet);
         } else if (type == 'bomb'){
             const bullet = game.scene.scenes[0].bulletGroup.create(bulletData.x, bulletData.y, 'bomb');
             bullet.setSize(bombData.size, bombData.size);
             bullet.setDisplaySize(bombData.displaySize, bombData.displaySize);
             bullet.setTint(tint);
-            bullet.setCollideWorldBounds(true);
-            bullet.body.onWorldBounds = true;
+            bullet.setCollideWorldBounds(false);
+            bullet.body.onWorldBounds = false;
             bullet.body.allowGravity = true;
             bullet.type = 'bomb';
 
@@ -421,24 +461,15 @@ function createBullet(bulletData, id, tint, type){
                 bullets = bullets.filter(b => b !== bullet);
                 socket.emit('destroyBullet', bullet.id);
             });
-
-            // Handle bullet out of bounds
-            bullet.body.world.on('worldbounds', (body) => {
-                if (body.gameObject === bullet) {
-                    destroyBullet(bullet);
-                    socket.emit('bulletOutOfBounds', bullet.id);
-                }
-            });
         bullets.push(bullet);
     }  else if (type == 'shotgun'){
             const bullet = game.scene.scenes[0].bulletGroup.create(bulletData.x, bulletData.y, 'shotgun');
             var randomVelocity = (Math.random() * 200) - 100;
-            console.log(randomVelocity);
             bullet.setSize(shotgunData.size, shotgunData.size);
             bullet.setDisplaySize(shotgunData.displaySize, shotgunData.displaySize);
             bullet.setTint(tint);
-            bullet.setCollideWorldBounds(true);
-            bullet.body.onWorldBounds = true;
+            bullet.setCollideWorldBounds(false);
+            bullet.body.onWorldBounds = false;
             bullet.body.allowGravity = false;
             bullet.type = 'shotgun';
 
@@ -447,7 +478,7 @@ function createBullet(bulletData, id, tint, type){
 
             bullet.body.velocity.x = (bulletData.dir.x * shotgunData.v) + randomVelocity;
             bullet.body.velocity.y = (bulletData.dir.y * shotgunData.v) + randomVelocity;    
-            console.log(bullet.body.velocity.x);
+
             bullet.shooterId = bulletData.shooterId;
             
             updateBulletRotation(bullet);
@@ -458,12 +489,62 @@ function createBullet(bulletData, id, tint, type){
                 bullets = bullets.filter(b => b !== bullet);
                 socket.emit('destroyBullet', bullet.id);
             });
+        bullets.push(bullet);
+    } else if (type == 'knife'){
+            const bullet = game.scene.scenes[0].bulletGroup.create(bulletData.x, bulletData.y, 'knife');
+            bullet.setSize(knifeData.size, knifeData.size);
+            bullet.setDisplaySize(knifeData.displaySize, knifeData.displaySize);
+            bullet.setTint(tint);
+            bullet.setCollideWorldBounds(false);
+            bullet.body.onWorldBounds = false;
+            bullet.body.allowGravity = true;
+            bullet.type = 'knife';
 
-            // Handle bullet out of bounds
-            bullet.body.world.on('worldbounds', (body) => {
-                if (body.gameObject === bullet) {
-                    destroyBullet(bullet);
-                    socket.emit('bulletOutOfBounds', bullet.id);
+            // Generate a unique ID for the bullet
+            bullet.id = id;
+
+            bullet.body.velocity.x = (bulletData.dir.x * knifeData.v);
+            bullet.body.velocity.y = (bulletData.dir.y * knifeData.v);    
+
+            bullet.shooterId = bulletData.shooterId;
+            
+            updateBulletRotation(bullet);
+            
+            // Destroy bullet when it hits a platform
+            game.scene.scenes[0].physics.add.collider(bullet, platforms, () => {
+                bullet.destroy();
+                bullets = bullets.filter(b => b !== bullet);
+                socket.emit('destroyBullet', bullet.id);
+            });
+        bullets.push(bullet);
+    } else if (type == 'ball'){
+            const bullet = game.scene.scenes[0].bulletGroup.create(bulletData.x, bulletData.y, 'ball');
+            bullet.setSize(ballData.size, ballData.size);
+            bullet.setDisplaySize(ballData.displaySize, ballData.displaySize);
+            bullet.bounceCounter = 5;
+            bullet.setTint(tint);
+            bullet.setCollideWorldBounds(true);
+            bullet.body.onWorldBounds = true;
+            bullet.body.allowGravity = true;
+            bullet.type = 'ball';
+            bullet.setBounce(1);
+
+            // Generate a unique ID for the bullet
+            bullet.id = id;
+
+            bullet.body.velocity.x = bulletData.dir.x * ballData.v;
+            bullet.body.velocity.y = bulletData.dir.y * ballData.v;    
+            bullet.shooterId = bulletData.shooterId;
+            
+            updateBulletRotation(bullet);
+            
+            // Destroy bullet when it hits a platform
+            game.scene.scenes[0].physics.add.collider(bullet, platforms, () => {
+                bullet.bounceCounter--;
+                    if (bullet.bounceCounter < 1){
+                    bullet.destroy();
+                    bullets = bullets.filter(b => b !== bullet);
+                    socket.emit('destroyBullet', bullet.id);
                 }
             });
         bullets.push(bullet);
@@ -671,9 +752,19 @@ function update() {
                         dealDmg(id, 4);
                         }
                         
+                        if (bullet.type == 'knife'){
+                        dealDmg(id, 8);
+                        }
+                        
+                        if (bullet.type == 'ball'){
+                            dealDmg(id, 15);
+                            bullet.body.velocity.y = bullet.body.velocity.y * -1;
+                            bullet.bounceCount--;
+                        }
+                        
 
                         // Destroy the bullet locally
-                        if (bullet.type != 'explosion'){
+                        if (bullet.type != 'explosion' && bullet.type != 'ball'){
                         destroyBullet(bullet);
                         }
                         bullets.splice(index, 1); // Remove bullet from the array
@@ -684,7 +775,7 @@ function update() {
                 }
 
                 // Bullet out of bounds cleanup
-                if (bullet.x < 0 || bullet.x > 1200 || bullet.y < 0 || bullet.y > 620) {
+                if (bullet.x < -2000 || bullet.x > 3200 || bullet.y < -2000 || bullet.y > 2620) {
                     bullet.destroy();
                     bullets.splice(index, 1);
                 }
@@ -754,7 +845,6 @@ socket.on("tookDamage", ({ dmg, id, hp, origin }) => {
 
 // Client-side: When a bullet is destroyed (on all clients)
 socket.on('destroyBullet', (bulletId) => {
-    console.log('Bullet destroyed:', bulletId);
 
     // Find the bullet in the local array
     const bullet = bullets.find(b => b.id === bulletId);

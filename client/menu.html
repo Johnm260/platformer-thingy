@@ -191,6 +191,8 @@
         <option value="arrow">Arrow</option>
         <option value="bomb">Bomb</option>
         <option value="shotgun">Shotgun</option>
+        <option value="knife">Knife</option>
+        <option value="ball">Ball</option>
       </select>
     </div>
       
@@ -234,6 +236,8 @@
         <option value="arrow">Arrow</option>
         <option value="bomb">Bomb</option>
         <option value="shotgun">Shotgun</option>
+        <option value="knife">Knife</option>
+        <option value="ball">Ball</option>
       </select>
     </div>
 
@@ -246,6 +250,8 @@
     const blueNumber = document.getElementById("blueNumber");
     const canvas = document.getElementById("colorPreview");
     const ctx = canvas.getContext("2d");
+    document.getElementById("weapon1").value = localStorage.getItem("weapon1");
+    document.getElementById("weapon2").value = localStorage.getItem("weapon2");
 
     const spriteList = [
         "assets/sprite1.png",
