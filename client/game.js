@@ -16,7 +16,7 @@ console.log(selectedSprite);
 let weapon1 = localStorage.getItem("weapon1");
 let weapon2 = localStorage.getItem("weapon2");
 let bullets = [];
-let pelletCount = 8;
+let pelletCount = 6;
 let otherPlayers = {};
 let isFrozen = false;
 let isTyping = false; // Track if the user is typing
@@ -184,7 +184,7 @@ function create() {
                             speed: 200,
                         };
                         console.log(newData.dir);
-                        shootCooldown = 2000;
+                        shootCooldown = 1000;
                         createBullet(newData, id, bulletTint, 'shotgun');
                         canShoot = false;
                     }
