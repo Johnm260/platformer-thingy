@@ -13,12 +13,16 @@ let shootCooldown;
 let selectedSprite = localStorage.getItem('selectedSprite') || 'sprite1';
 console.log(selectedSprite);
 
+let weapon1 = localStorage.getItem("weapon1");
+let weapon2 = localStorage.getItem("weapon2");
 let bullets = [];
+let pelletCount = 8;
 let otherPlayers = {};
 let isFrozen = false;
 let isTyping = false; // Track if the user is typing
 
 var bombData = {size: 16, displaySize: 32, v: 500};
+var shotgunData = {size: 4, displaySize: 8, v: 1500};
 var explosionData = {size: 128, displaySize: 128};
 
 // Create the game instance with Phaser 3
@@ -55,6 +59,7 @@ function preload() {
     this.load.image('platform2', 'assets/platform2.png');
     this.load.image('arrow', 'assets/arrow.png');
     this.load.image('bomb', 'assets/bomb.png');
+    this.load.image('shotgun', 'assets/pellet.png');
     this.load.image('explosion', 'assets/explosion.png');
 }
 
@@ -110,98 +115,85 @@ function create() {
     });
 
     this.input.keyboard.on('keydown-E', () => {
-        var weapon1 = 'arrow';
-        if (weapon1 == 'arrow'){
-            if (isFrozen || isTyping || !canShoot) return;
-
-            var data = shootBulletTowardsMouse('arrow');
-            var bulletDirection = data[0];
-            var id = data[1];
-            var bulletTint = data[2];
-            var newData = {
-                shooterId: localPlayerId,
-                x: localPlayer.x,
-                y: localPlayer.y,
-                dir: bulletDirection,
-            };
-            shootCooldown = 500;
-            createBullet(newData, id, bulletTint, 'arrow');
-            canShoot = false;
-
-            setTimeout(() => {
-                canShoot = true;
-            }, shootCooldown);
-        }
-        if (weapon1 == 'bomb'){
-            if (isFrozen || isTyping || !canShoot) return;
-
-            var data = shootBulletTowardsMouse('bomb');
-            var bulletDirection = data[0];
-            var id = data[1];
-            var bulletTint = data[2];
-            var newData = {
-                shooterId: localPlayerId,
-                x: localPlayer.x,
-                y: localPlayer.y,
-                dir: bulletDirection,
-                speed: 200,
-            };
-            shootCooldown = 2000;
-            createBullet(newData, id, bulletTint, 'bomb');
-            canShoot = false;
-
-            setTimeout(() => {
-                canShoot = true;
-            }, shootCooldown);
-        }
+        prepareBullet(weapon1);
     });
 
     this.input.keyboard.on('keydown-Q', () => {
-        var weapon2 = 'bomb';
-        if (weapon2 == 'arrow'){
-            if (isFrozen || isTyping || !canShoot) return;
-
-            var data = shootBulletTowardsMouse('arrow');
-            var bulletDirection = data[0];
-            var id = data[1];
-            var bulletTint = data[2];
-            var newData = {
-                shooterId: localPlayerId,
-                x: localPlayer.x,
-                y: localPlayer.y,
-                dir: bulletDirection,
-            };
-            shootCooldown = 500;
-            createBullet(newData, id, bulletTint, 'arrow');
-            canShoot = false;
-
-            setTimeout(() => {
-                canShoot = true;
-            }, shootCooldown);
-        }
-        if (weapon2 == 'bomb'){
-            if (isFrozen || isTyping || !canShoot) return;
-
-            var data = shootBulletTowardsMouse('bomb');
-            var bulletDirection = data[0];
-            var id = data[1];
-            var bulletTint = data[2];
-            var newData = {
-                shooterId: localPlayerId,
-                x: localPlayer.x,
-                y: localPlayer.y,
-                dir: bulletDirection,
-                speed: 200,
-            };
-            shootCooldown = 2000;
-            createBullet(newData, id, bulletTint, 'bomb');
-            canShoot = false;
-
-            setTimeout(() => {
-                canShoot = true;
-            }, shootCooldown);
-        }
+        prepareBullet(weapon2);
     });
+    
+    function prepareBullet(type){
+        if (type == 'arrow'){
+                if (isFrozen || isTyping || !canShoot) return;
+
+                var data = shootBulletTowardsMouse('arrow');
+                var bulletDirection = data[0];
+                var id = data[1];
+                var bulletTint = data[2];
+                var newData = {
+                    shooterId: localPlayerId,
+                    x: localPlayer.x,
+                    y: localPlayer.y,
+                    dir: bulletDirection,
+                };
+                shootCooldown = 500;
+                createBullet(newData, id, bulletTint, 'arrow');
+                canShoot = false;
+
+                setTimeout(() => {
+                    canShoot = true;
+                }, shootCooldown);
+            }
+            if (type == 'bomb'){
+                if (isFrozen || isTyping || !canShoot) return;
+
+                var data = shootBulletTowardsMouse('bomb');
+                var bulletDirection = data[0];
+                var id = data[1];
+                var bulletTint = data[2];
+                var newData = {
+                    shooterId: localPlayerId,
+                    x: localPlayer.x,
+                    y: localPlayer.y,
+                    dir: bulletDirection,
+                    speed: 200,
+                };
+                shootCooldown = 2000;
+                createBullet(newData, id, bulletTint, 'bomb');
+                canShoot = false;
+
+                setTimeout(() => {
+                    canShoot = true;
+                }, shootCooldown);
+            }
+            if (type == 'shotgun'){
+                if (isFrozen || isTyping || !canShoot) return;
+                    for (var i = 0; i < pelletCount; i++){
+                        var data = shootBulletTowardsMouse('shotgun');
+                        var bulletDirection = data[0];
+                        var offset = (Math.random() * (0.3) - 0.15);
+                        bulletDirection.x += offset;
+                        bulletDirection.y -= offset;
+                        var id = data[1];
+                        var bulletTint = data[2];
+                        var newData = {
+                            shooterId: localPlayerId,
+                            x: localPlayer.x,
+                            y: localPlayer.y,
+                            dir: bulletDirection,
+                            speed: 200,
+                        };
+                        console.log(newData.dir);
+                        shootCooldown = 2000;
+                        createBullet(newData, id, bulletTint, 'shotgun');
+                        canShoot = false;
+                    }
+                setTimeout(() => {
+                    canShoot = true;
+                }, shootCooldown);
+            }
+    }
+
 
 
     // Function to calculate the direction and shoot a bullet towards the mouse
@@ -438,7 +430,44 @@ function createBullet(bulletData, id, tint, type){
                 }
             });
         bullets.push(bullet);
-    }  
+    }  else if (type == 'shotgun'){
+            const bullet = game.scene.scenes[0].bulletGroup.create(bulletData.x, bulletData.y, 'shotgun');
+            var randomVelocity = (Math.random() * 200) - 100;
+            console.log(randomVelocity);
+            bullet.setSize(shotgunData.size, shotgunData.size);
+            bullet.setDisplaySize(shotgunData.displaySize, shotgunData.displaySize);
+            bullet.setTint(tint);
+            bullet.setCollideWorldBounds(true);
+            bullet.body.onWorldBounds = true;
+            bullet.body.allowGravity = false;
+            bullet.type = 'shotgun';
+
+            // Generate a unique ID for the bullet
+            bullet.id = id;
+
+            bullet.body.velocity.x = (bulletData.dir.x * shotgunData.v) + randomVelocity;
+            bullet.body.velocity.y = (bulletData.dir.y * shotgunData.v) + randomVelocity;    
+            console.log(bullet.body.velocity.x);
+            bullet.shooterId = bulletData.shooterId;
+            
+            updateBulletRotation(bullet);
+            
+            // Destroy bullet when it hits a platform
+            game.scene.scenes[0].physics.add.collider(bullet, platforms, () => {
+                bullet.destroy();
+                bullets = bullets.filter(b => b !== bullet);
+                socket.emit('destroyBullet', bullet.id);
+            });
+
+            // Handle bullet out of bounds
+            bullet.body.world.on('worldbounds', (body) => {
+                if (body.gameObject === bullet) {
+                    destroyBullet(bullet);
+                    socket.emit('bulletOutOfBounds', bullet.id);
+                }
+            });
+        bullets.push(bullet);
+    }
 }
 
 function updateBulletRotation(bullet) {
@@ -636,6 +665,10 @@ function update() {
 
                         if (bullet.type == 'explosion'){
                         dealDmg(id, 25);
+                        }
+                        
+                        if (bullet.type == 'shotgun'){
+                        dealDmg(id, 4);
                         }
                         
 
