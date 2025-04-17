@@ -197,7 +197,7 @@ function create() {
             }
             if (type == 'knife'){
                 if (isFrozen || isTyping || !canShoot) return;
-                    var data = shootBulletTowardsMouse('shotgun');
+                    var data = shootBulletTowardsMouse('knife');
                     var bulletDirection = data[0];
                     var offset = (Math.random() * (0.05) - 0.025);
                     bulletDirection.x += offset;
