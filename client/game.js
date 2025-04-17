@@ -115,11 +115,11 @@ function create() {
     });
 
     this.input.keyboard.on('keydown-E', () => {
-        prepareBullet(weapon1);
+        prepareBullet(weapon2);
     });
 
     this.input.keyboard.on('keydown-Q', () => {
-        prepareBullet(weapon2);
+        prepareBullet(weapon1);
     });
     
     function prepareBullet(type){
