@@ -36,7 +36,7 @@ io.on('connection', (socket) => {
             y: players[socket.id].y,
             hp: players[socket.id].hp,
             color: players[socket.id].color,
-            name,
+            name: players[socket.id].name,
             sprite: players[socket.id].sprite // Include the sprite when notifying others
         });
    
@@ -117,7 +117,8 @@ io.on('connection', (socket) => {
     // Handle freezing/unfreezing players
     socket.on('playerFrozen', (data) => {
         if (players[data.id]) {
-            players[data.id].frozen = data.frozen;  
+            players[data.id].frozen = data.frozen;
+            socket.emit('playerIsFrozen', {id: data.id, frozen: data.frozen});
         }
     });
 

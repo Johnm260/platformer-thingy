@@ -13,16 +13,17 @@ let shootCooldown;
 let selectedSprite = localStorage.getItem('selectedSprite') || 'sprite1';
 console.log(selectedSprite);
 
+let playerColor = JSON.parse(localStorage.getItem("playerColor")) || { red: 255, green: 255, blue: 255 };
 let weapon1 = localStorage.getItem("weapon1");
 let weapon2 = localStorage.getItem("weapon2");
 let bullets = [];
-let pelletCount = 6;
+let pelletCount = 8;
 let otherPlayers = {};
 let isFrozen = false;
 let isTyping = false; // Track if the user is typing
 
 var bombData = {size: 16, displaySize: 32, v: 500};
-var shotgunData = {size: 4, displaySize: 8, v: 1500};
+var shotgunData = {size: 5, displaySize: 10, v: 1500};
 var explosionData = {size: 128, displaySize: 128};
 var knifeData = {size: 12, displaySize: 24, v: 1000};
 var ballData = {size: 32, displaySize: 32, v: 750};
@@ -329,6 +330,7 @@ function create() {
                 }
             }
         }
+        updatePlayerList();
     });
 
     // Client-side: When a new player is added
@@ -336,6 +338,7 @@ function create() {
             if (!otherPlayers[playerData.id]) {
                 createOtherPlayer.call(this, playerData.id, playerData);
             }
+            updatePlayerList();
         });
 
 
@@ -357,6 +360,7 @@ function create() {
             otherPlayers[playerId].destroy();
             delete otherPlayers[playerId];
         }
+        updatePlayerList();
     });
 
     socket.on('playerFrozen', (data) => {
@@ -527,7 +531,7 @@ function createBullet(bulletData, id, tint, type){
             bullet.body.onWorldBounds = true;
             bullet.body.allowGravity = true;
             bullet.type = 'ball';
-            bullet.setBounce(1);
+            bullet.setBounce(0.8);
 
             // Generate a unique ID for the bullet
             bullet.id = id;
@@ -864,6 +868,11 @@ socket.on("killedPlayer", (origin) => {
     }
 });
 
+socket.on('playerIsFrozen', (id, frozen) => {
+    otherPlayers[id].frozen = frozen;
+    updatePlayerList();
+});
+
 
 
 function destroyBullet(bullet) {
@@ -879,8 +888,11 @@ function createOtherPlayer(id, playerData) {
     const otherPlayer = game.scene.scenes[0].physics.add.sprite(playerData.x, playerData.y, spriteKey);
     otherPlayer.setCollideWorldBounds(true);
     otherPlayer.setTint(rgbToHexTint(playerData.color));
+    otherPlayer.color = playerData.color;
+    otherPlayer.name = playerData.name;
     otherPlayer.scale = 0.1;
     otherPlayer.hp = playerData.hp;
+    otherPlayer.frozen = false;
 
     // Add health bar graphics
     otherPlayer.hpBarBg = game.scene.scenes[0].add.graphics();
@@ -889,6 +901,7 @@ function createOtherPlayer(id, playerData) {
     game.scene.scenes[0].physics.add.collider(otherPlayer, platforms);
 
     otherPlayers[id] = otherPlayer;
+    updatePlayerList();
 }
 
 function rgbToHexString({ red, green, blue }) {
@@ -914,6 +927,28 @@ function darkenColor({ red, green, blue }, factor) {
     const darkBlue = Math.floor(blue * (1 - factor));
     return rgbToHexString({ red: darkRed, green: darkGreen, blue: darkBlue });
 }
+
+function updatePlayerList() {
+    const playerList = document.getElementById('player-list');
+    const { red, green, blue } = playerColor;
+    const localNameColor = `rgb(${red}, ${green}, ${blue})`; 
+    playerList.innerHTML = '<strong>Players:</strong><br>';
+    playerList.innerHTML += `<div style="color: ${localNameColor};">${localStorage.playerName} (You)</div>`;
+
+
+    for (const id in otherPlayers) {
+        const { red, green, blue } = otherPlayers[id].color;
+        const nameColor = `rgb(${red}, ${green}, ${blue})`;
+        const player = otherPlayers[id];
+        console.log(player);
+
+        const frozenText = player.frozen ? ' <span style="color: gray;">(frozen)</span>' : '';
+        
+        const playerItem = `<div style="color: ${nameColor};">${player.name}${frozenText}</div>`;
+        playerList.innerHTML += playerItem;
+    }
+}
+
 
 window.addEventListener('blur', () => {
     if (!isFrozen) {
