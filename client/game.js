@@ -10,6 +10,7 @@ let chatMessages;
 let playerTint;
 let localPlayerId;
 let shootCooldown;
+let dashCooldown;
 let selectedSprite = localStorage.getItem('selectedSprite') || 'sprite1';
 console.log(selectedSprite);
 
@@ -21,6 +22,7 @@ let pelletCount = 8;
 let otherPlayers = {};
 let isFrozen = false;
 let isTyping = false; // Track if the user is typing
+let canDash = true;
 
 var bombData = {size: 16, displaySize: 32, v: 500};
 var shotgunData = {size: 5, displaySize: 10, v: 1500};
@@ -128,6 +130,31 @@ function create() {
     });
     
     function prepareBullet(type){
+        if (type == 'evilnuke1234'){
+                    if (isFrozen || isTyping || !canShoot) return;
+
+                    var data = shootBulletTowardsMouse('bomb');
+                    var bulletDirection = data[0];
+                    var offset = (Math.random() * (0.3) - 0.15);
+                    bulletDirection.x += offset;
+                    bulletDirection.y -= offset;
+                    var id = data[1];
+                    var bulletTint = data[2];
+                    var newData = {
+                        shooterId: localPlayerId,
+                        x: localPlayer.x,
+                        y: localPlayer.y,
+                        dir: bulletDirection,
+                        speed: 200,
+                    };
+                    shootCooldown = 0;
+                    createBullet(newData, id, bulletTint, 'evilnuke1234');
+                    canShoot = false;
+
+                    setTimeout(() => {
+                        canShoot = true;
+                    }, shootCooldown);
+                }
         if (type == 'arrow'){
                 if (isFrozen || isTyping || !canShoot) return;
 
@@ -240,6 +267,20 @@ function create() {
                 setTimeout(() => {
                     canShoot = true;
                 }, shootCooldown);
+            }
+            if (type == 'dash'){
+                if (isFrozen || isTyping || !canDash) return;
+
+                var data = shootBulletTowardsMouse('dash');
+                
+                localPlayer.body.velocity.x = data[0].x * 600;
+                localPlayer.body.velocity.y = data[0].y * 600;
+                dashCooldown = 1000;
+                canDash = false;
+
+                setTimeout(() => {
+                    canDash = true;
+                }, dashCooldown);
             }
     }
 
@@ -439,7 +480,34 @@ function createBullet(bulletData, id, tint, type){
                 socket.emit('destroyBullet', bullet.id);
             });
             bullets.push(bullet);
-        } else if (type == 'bomb'){
+        } else if (type == 'evilnuke1234'){
+            const bullet = game.scene.scenes[0].bulletGroup.create(bulletData.x, bulletData.y, 'bomb');
+            bullet.setSize(bombData.size, bombData.size);
+            bullet.setDisplaySize(bombData.displaySize, bombData.displaySize);
+            bullet.setTint(tint);
+            bullet.setCollideWorldBounds(false);
+            bullet.body.onWorldBounds = false;
+            bullet.body.allowGravity = true;
+            bullet.type = 'bomb';
+
+            // Generate a unique ID for the bullet
+            bullet.id = id;
+
+            bullet.body.velocity.x = bulletData.dir.x * bombData.v * 4;
+            bullet.body.velocity.y = bulletData.dir.y * bombData.v * 4;    
+            bullet.shooterId = bulletData.shooterId;
+            
+            updateBulletRotation(bullet);
+            
+            // Destroy bullet when it hits a platform
+            game.scene.scenes[0].physics.add.collider(bullet, platforms, () => {
+                createExplosion(bullet.x, bullet.y, bullet.shooterId);
+                bullet.destroy();
+                bullets = bullets.filter(b => b !== bullet);
+                socket.emit('destroyBullet', bullet.id);
+            });
+            bullets.push(bullet);
+    } else if (type == 'bomb'){
             const bullet = game.scene.scenes[0].bulletGroup.create(bulletData.x, bulletData.y, 'bomb');
             bullet.setSize(bombData.size, bombData.size);
             bullet.setDisplaySize(bombData.displaySize, bombData.displaySize);
@@ -681,11 +749,33 @@ function update() {
     });
     if (!isFrozen && !isTyping) {  // Only allow movement if not typing
         if (AKey.isDown) {
-            localPlayer.setVelocityX(-250);
+            if (localPlayer.body.touching.down){
+                localPlayer.setVelocityX(-250);
+            } else {
+                if (localPlayer.body.velocity.x > -250){
+                localPlayer.body.velocity.x += -40;
+                    if (localPlayer.body.velocity.x < -250){
+                        localPlayer.body.velocity.x = -250;
+                    }
+                }
+            }
         } else if (DKey.isDown) {
-            localPlayer.setVelocityX(250);
+            if (localPlayer.body.touching.down){
+                localPlayer.setVelocityX(250);
+            } else {
+                if (localPlayer.body.velocity.x < 250){
+                    localPlayer.body.velocity.x += 40;
+                    if (localPlayer.body.velocity.x > 250){
+                        localPlayer.body.velocity.x = 250;
+                    }
+                }
+            }
         } else {
-            localPlayer.setVelocityX(0);
+            if (localPlayer.body.touching.down){
+                localPlayer.setVelocityX(localPlayer.body.velocity.x * 0.8);
+                }  else {
+                localPlayer.setVelocityX(localPlayer.body.velocity.x * 0.99);
+                }
         }
 
         if (WKey.isDown && localPlayer.body.touching.down) {
