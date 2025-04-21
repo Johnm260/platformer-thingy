@@ -275,7 +275,7 @@ function create() {
                 
                 localPlayer.body.velocity.x = data[0].x * 600;
                 localPlayer.body.velocity.y = data[0].y * 600;
-                dashCooldown = 1000;
+                dashCooldown = 2000;
                 canDash = false;
 
                 setTimeout(() => {
