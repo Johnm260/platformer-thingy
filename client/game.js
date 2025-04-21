@@ -28,7 +28,7 @@ var bombData = {size: 16, displaySize: 32, v: 500};
 var shotgunData = {size: 5, displaySize: 10, v: 1500};
 var explosionData = {size: 128, displaySize: 128};
 var knifeData = {size: 12, displaySize: 24, v: 1000};
-var ballData = {size: 32, displaySize: 32, v: 750};
+var ballData = {size: 128, displaySize: 32, v: 750};
 
 // Create the game instance with Phaser 3
 const config = {
@@ -62,6 +62,9 @@ function preload() {
     this.load.image('sprite4', 'assets/sprite5.png');
     this.load.image('platform', 'assets/platform.png');
     this.load.image('platform2', 'assets/platform2.png');
+    this.load.image('cityPlatform', 'assets/cityPlatform.png');
+    this.load.image('building1', 'assets/building1.png');
+
     this.load.image('arrow', 'assets/arrow.png');
     this.load.image('bomb', 'assets/bomb.png');
     this.load.image('shotgun', 'assets/pellet.png');
@@ -73,15 +76,42 @@ function preload() {
 
 function create() {
     platforms = this.physics.add.staticGroup();
-    platforms.create(250, 588, 'platform').setScale(1).refreshBody(); 
-    platforms.create(750, 588, 'platform').setScale(1).refreshBody(); 
-    platforms.create(1250, 588, 'platform').setScale(1).refreshBody();
-    platforms.create(300, 450, 'platform2').setScale(0.75).refreshBody();
-    platforms.create(1000, 350, 'platform2').setScale(0.75).refreshBody();
-    platforms.create(800, 500, 'platform2').setScale(0.75).refreshBody();
-    platforms.create(500, 300, 'platform2').setScale(0.75).refreshBody();
-    platforms.create(700, 150, 'platform2').setScale(0.75).refreshBody();
-    platforms.create(150, 250, 'platform2').setScale(0.75).refreshBody();
+    platforms.create(-750, 1588, 'platform').setScale(1).refreshBody(); 
+    platforms.create(-250, 1588, 'platform').setScale(1).refreshBody(); 
+    platforms.create(250, 1588, 'platform').setScale(1).refreshBody(); 
+    platforms.create(750, 1588, 'platform').setScale(1).refreshBody(); 
+    platforms.create(1250, 1588, 'platform').setScale(1).refreshBody();
+    platforms.create(1750, 1588, 'platform').setScale(1).refreshBody();
+    platforms.create(2250, 1588, 'cityPlatform').setScale(1).refreshBody();
+    platforms.create(2750, 1588, 'cityPlatform').setScale(1).refreshBody();
+    platforms.create(3250, 1588, 'cityPlatform').setScale(1).refreshBody();
+    platforms.create(3750, 1588, 'cityPlatform').setScale(1).refreshBody();
+    platforms.create(4250, 1588, 'cityPlatform').setScale(1).refreshBody();
+    platforms.create(4750, 1588, 'cityPlatform').setScale(1).refreshBody();
+    platforms.create(5250, 1588, 'cityPlatform').setScale(1).refreshBody();
+
+    platforms.create(350, 1400, 'platform2').setScale(0.75).refreshBody();
+    platforms.create(700, 1450, 'platform2').setScale(0.75).refreshBody();
+    platforms.create(900, 1300, 'platform2').setScale(0.75).refreshBody();
+    platforms.create(1100, 1400, 'platform2').setScale(0.75).refreshBody();
+    platforms.create(800, 1100, 'platform2').setScale(0.75).refreshBody();
+    platforms.create(300, 1200, 'platform2').setScale(0.75).refreshBody();
+    platforms.create(600, 1250, 'platform2').setScale(0.75).refreshBody();
+    platforms.create(-300, 1350, 'platform2').setScale(0.75).refreshBody();
+    platforms.create(0, 1400, 'platform2').setScale(0.75).refreshBody();
+    platforms.create(-200, 1150, 'platform2').setScale(0.75).refreshBody();
+    platforms.create(100, 1050, 'platform2').setScale(0.75).refreshBody();
+    
+    platforms.create(2500, 1520, 'building1').setScale(1).refreshBody();
+    platforms.create(2500, 1445, 'building1').setScale(1).refreshBody();
+    platforms.create(2500, 1370, 'building1').setScale(1).refreshBody();
+    platforms.create(2500, 1295, 'building1').setScale(1).refreshBody();
+    platforms.create(2500, 1220, 'building1').setScale(1).refreshBody();
+    platforms.create(2500, 1145, 'building1').setScale(1).refreshBody();
+    platforms.create(2500, 1070, 'building1').setScale(1).refreshBody();
+    platforms.create(2500, 995, 'building1').setScale(1).refreshBody();
+    
+    
 
     const name = localStorage.getItem("playerName") || "Anonymous";
     const color = JSON.parse(localStorage.getItem("playerColor")) || { red: 255, green: 255, blue: 255 };
@@ -97,6 +127,10 @@ function create() {
     playerTint = tint;
     this.physics.add.collider(localPlayer, platforms);
     localPlayer.hp = 100;
+        
+    this.cameras.main.setBounds(-2000, 0, 15000, 1600);
+    this.physics.world.setBounds(-2000, 0, 15000, 2000);
+    this.cameras.main.startFollow(localPlayer);
     
     // Create HP bar graphics and black border
     localPlayer.hpBarBg = this.add.graphics();      // Border
@@ -117,8 +151,8 @@ function create() {
     let player = localPlayer;
     // Update mouse position on pointer move
     this.input.on('pointermove', (pointer) => {
-        mousePosition.x = pointer.x;
-        mousePosition.y = pointer.y;
+        mousePosition.x = pointer.worldX;
+        mousePosition.y = pointer.worldY;
     });
 
     this.input.keyboard.on('keydown-E', () => {
@@ -273,8 +307,8 @@ function create() {
 
                 var data = shootBulletTowardsMouse('dash');
                 
-                localPlayer.body.velocity.x = data[0].x * 600;
-                localPlayer.body.velocity.y = data[0].y * 600;
+                localPlayer.body.velocity.x = data[0].x * 700;
+                localPlayer.body.velocity.y = data[0].y * 700;
                 dashCooldown = 2000;
                 canDash = false;
 
@@ -689,7 +723,11 @@ function drawHPBar(ctx, x, y, hp, maxHP = 100) {
 function update() {
     if (localPlayer) {
         const { x, y, hp, hpBar, hpBarBg } = localPlayer;
-
+        
+        if (localPlayer.y > 1800){
+            takeDmg(100);
+        }
+        
         const barWidth = 40;
         const barHeight = 6;
         const hpRatio = Phaser.Math.Clamp(hp / 100, 0, 1);
@@ -713,6 +751,9 @@ function update() {
         hpBar.fillStyle(hpColor, 1);
         hpBar.fillRect(x - barWidth / 2, y - 40, barWidth * hpRatio, barHeight);
     }
+    
+    const coordinatesList = document.getElementById('coordinates-list');
+    coordinatesList.innerHTML = `<div>x: ${Math.floor(localPlayer.body.x)}, y: ${Math.floor(localPlayer.body.y)}</div>`;
 
     Object.values(otherPlayers).forEach(player => {
         const { x, y, hp, hpBar, hpBarBg } = player;
@@ -852,7 +893,6 @@ function update() {
                         
                         if (bullet.type == 'ball'){
                             dealDmg(id, 15);
-                            bullet.body.velocity.y = bullet.body.velocity.y * -1;
                             bullet.bounceCount--;
                         }
                         
@@ -869,7 +909,7 @@ function update() {
                 }
 
                 // Bullet out of bounds cleanup
-                if (bullet.x < -2000 || bullet.x > 3200 || bullet.y < -2000 || bullet.y > 2620) {
+                if (bullet.x < -2000 || bullet.x > 3200 || bullet.y < 100 || bullet.y > 1990) {
                     bullet.destroy();
                     bullets.splice(index, 1);
                 }
@@ -895,16 +935,6 @@ socket.on('syncHP', (hp) => {
     if (localPlayer.hp <= 0){ // Respawn character (add later)
         localPlayer.destroy();
         window.location.assign("menu.html");
-    }
-});
-
-
-socket.on('bulletHitPlayer', (bulletId) => {
-    // Find the bullet and destroy it locally
-    const bullet = bullets.find(b => b.id === bulletId);
-    if (bullet) {
-        destroyBullet(bullet); // Destroy bullet locally
-        bullets = bullets.filter(b => b !== bullet); // Remove bullet from array
     }
 });
 
@@ -944,9 +974,12 @@ socket.on('destroyBullet', (bulletId) => {
     const bullet = bullets.find(b => b.id === bulletId);
     
     if (bullet) {
+        console.log(bullet.type);
         // Handle the bullet destruction
-        destroyBullet(bullet);  // Implement the removal of the bullet visually
-        bullets = bullets.filter(b => b !== bullet);  // Remove the bullet from the local array
+        if (bullet.type != 'ball' && bullet.type != 'explosion'){
+            destroyBullet(bullet);  // Implement the removal of the bullet visually
+            bullets = bullets.filter(b => b !== bullet);  // Remove the bullet from the local array
+        }
     }
 });
 

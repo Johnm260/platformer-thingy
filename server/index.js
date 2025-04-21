@@ -15,7 +15,7 @@ io.on('connection', (socket) => {
         socket.on('newPlayer', ({ name, color, sprite }) => {
             players[socket.id] = {
                 x: 100,
-                y: 450,
+                y: 1450,
                 velocity: { x: 0, y: 0 },
                 acceleration: { x: 0, y: 0 },
                 frozen: false,
