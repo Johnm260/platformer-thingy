@@ -188,6 +188,11 @@ io.on('connection', (socket) => {
             socket.emit('syncHP', players[socket.id].hp);
         }
     });
+    
+    socket.on('createExplosion', ({x, y, id}) => {
+        console.log("server received explosion!");
+        socket.broadcast.emit('explosionCreated', {x, y, id});
+    });
 
 
 });

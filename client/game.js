@@ -18,7 +18,7 @@ let playerColor = JSON.parse(localStorage.getItem("playerColor")) || { red: 255,
 let weapon1 = localStorage.getItem("weapon1");
 let weapon2 = localStorage.getItem("weapon2");
 let bullets = [];
-let pelletCount = 8;
+let pelletCount = 14;
 let otherPlayers = {};
 let isFrozen = false;
 let isTyping = false; // Track if the user is typing
@@ -82,6 +82,7 @@ function create() {
     platforms.create(750, 1588, 'platform').setScale(1).refreshBody(); 
     platforms.create(1250, 1588, 'platform').setScale(1).refreshBody();
     platforms.create(1750, 1588, 'platform').setScale(1).refreshBody();
+    
     platforms.create(2250, 1588, 'cityPlatform').setScale(1).refreshBody();
     platforms.create(2750, 1588, 'cityPlatform').setScale(1).refreshBody();
     platforms.create(3250, 1588, 'cityPlatform').setScale(1).refreshBody();
@@ -89,6 +90,10 @@ function create() {
     platforms.create(4250, 1588, 'cityPlatform').setScale(1).refreshBody();
     platforms.create(4750, 1588, 'cityPlatform').setScale(1).refreshBody();
     platforms.create(5250, 1588, 'cityPlatform').setScale(1).refreshBody();
+    platforms.create(5750, 1588, 'cityPlatform').setScale(1).refreshBody();
+    platforms.create(6250, 1588, 'cityPlatform').setScale(1).refreshBody();
+    platforms.create(6750, 1588, 'cityPlatform').setScale(1).refreshBody();
+
 
     platforms.create(350, 1400, 'platform2').setScale(0.75).refreshBody();
     platforms.create(700, 1450, 'platform2').setScale(0.75).refreshBody();
@@ -102,15 +107,84 @@ function create() {
     platforms.create(-200, 1150, 'platform2').setScale(0.75).refreshBody();
     platforms.create(100, 1050, 'platform2').setScale(0.75).refreshBody();
     
-    platforms.create(2500, 1520, 'building1').setScale(1).refreshBody();
-    platforms.create(2500, 1445, 'building1').setScale(1).refreshBody();
-    platforms.create(2500, 1370, 'building1').setScale(1).refreshBody();
-    platforms.create(2500, 1295, 'building1').setScale(1).refreshBody();
-    platforms.create(2500, 1220, 'building1').setScale(1).refreshBody();
-    platforms.create(2500, 1145, 'building1').setScale(1).refreshBody();
-    platforms.create(2500, 1070, 'building1').setScale(1).refreshBody();
-    platforms.create(2500, 995, 'building1').setScale(1).refreshBody();
+    platforms.create(2505, 1520, 'building1').setScale(1).refreshBody();
+    platforms.create(2510, 1445, 'building1').setScale(1).refreshBody();
+    platforms.create(2515, 1370, 'building1').setScale(1).refreshBody();
+    platforms.create(2520, 1295, 'building1').setScale(1).refreshBody();
+    platforms.create(2525, 1220, 'building1').setScale(1).refreshBody();
+    platforms.create(2530, 1145, 'building1').setScale(1).refreshBody();
+    platforms.create(2535, 1070, 'building1').setScale(1).refreshBody();
+    platforms.create(2540, 995, 'building1').setScale(1).refreshBody();
     
+    platforms.create(3005, 1520, 'building1').setScale(1).refreshBody();
+    platforms.create(3010, 1445, 'building1').setScale(1).refreshBody();
+    platforms.create(3015, 1370, 'building1').setScale(1).refreshBody();
+    platforms.create(3020, 1295, 'building1').setScale(1).refreshBody();
+    platforms.create(3025, 1220, 'building1').setScale(1).refreshBody();
+    platforms.create(3030, 1145, 'building1').setScale(1).refreshBody();
+    platforms.create(3035, 1070, 'building1').setScale(1).refreshBody();
+    platforms.create(3040, 995, 'building1').setScale(1).refreshBody();
+    platforms.create(3045, 920, 'building1').setScale(1).refreshBody();
+    platforms.create(3050, 845, 'building1').setScale(1).refreshBody();
+    platforms.create(3055, 770, 'building1').setScale(1).refreshBody();
+    platforms.create(3325, 1520, 'building1').setScale(1).refreshBody();
+    platforms.create(3330, 1445, 'building1').setScale(1).refreshBody();
+    platforms.create(3335, 1370, 'building1').setScale(1).refreshBody();
+    platforms.create(3340, 1295, 'building1').setScale(1).refreshBody();
+    platforms.create(3345, 1220, 'building1').setScale(1).refreshBody();
+    platforms.create(3350, 1145, 'building1').setScale(1).refreshBody();
+    platforms.create(3355, 1070, 'building1').setScale(1).refreshBody();
+    platforms.create(3360, 995, 'building1').setScale(1).refreshBody();
+    platforms.create(3365, 920, 'building1').setScale(1).refreshBody();
+    platforms.create(3370, 845, 'building1').setScale(1).refreshBody();
+    
+    platforms.create(3905, 1520, 'building1').setScale(1).refreshBody();
+    platforms.create(3910, 1445, 'building1').setScale(1).refreshBody();
+    platforms.create(3915, 1370, 'building1').setScale(1).refreshBody();
+    platforms.create(3920, 1295, 'building1').setScale(1).refreshBody();
+    platforms.create(3925, 1220, 'building1').setScale(1).refreshBody();
+    platforms.create(3930, 1145, 'building1').setScale(1).refreshBody();
+    platforms.create(3935, 1070, 'building1').setScale(1).refreshBody();
+    platforms.create(3940, 995, 'building1').setScale(1).refreshBody();
+    platforms.create(3945, 920, 'building1').setScale(1).refreshBody();
+    platforms.create(4225, 1520, 'building1').setScale(1).refreshBody();
+    platforms.create(4230, 1445, 'building1').setScale(1).refreshBody();
+    platforms.create(4235, 1370, 'building1').setScale(1).refreshBody();
+    platforms.create(4240, 1295, 'building1').setScale(1).refreshBody();
+    platforms.create(4245, 1220, 'building1').setScale(1).refreshBody();
+    platforms.create(4250, 1145, 'building1').setScale(1).refreshBody();
+    platforms.create(4255, 1070, 'building1').setScale(1).refreshBody();
+    platforms.create(4260, 995, 'building1').setScale(1).refreshBody();
+    
+    platforms.create(4605, 1520, 'building1').setScale(1).refreshBody();
+    platforms.create(4610, 1445, 'building1').setScale(1).refreshBody();
+    platforms.create(4615, 1370, 'building1').setScale(1).refreshBody();
+    platforms.create(4620, 1295, 'building1').setScale(1).refreshBody();
+    platforms.create(4625, 1220, 'building1').setScale(1).refreshBody();
+    platforms.create(4630, 1145, 'building1').setScale(1).refreshBody();
+    platforms.create(4635, 1070, 'building1').setScale(1).refreshBody();
+    platforms.create(4925, 1520, 'building1').setScale(1).refreshBody();
+    platforms.create(4930, 1445, 'building1').setScale(1).refreshBody();
+    platforms.create(4935, 1370, 'building1').setScale(1).refreshBody();
+    platforms.create(4940, 1295, 'building1').setScale(1).refreshBody();
+    platforms.create(4945, 1220, 'building1').setScale(1).refreshBody();
+    platforms.create(4950, 1145, 'building1').setScale(1).refreshBody();
+    
+    platforms.create(5305, 1520, 'building1').setScale(1).refreshBody();
+    platforms.create(5310, 1445, 'building1').setScale(1).refreshBody();
+    platforms.create(5315, 1370, 'building1').setScale(1).refreshBody();
+    platforms.create(5320, 1295, 'building1').setScale(1).refreshBody();
+    platforms.create(5325, 1220, 'building1').setScale(1).refreshBody();
+    platforms.create(5625, 1520, 'building1').setScale(1).refreshBody();
+    platforms.create(5630, 1445, 'building1').setScale(1).refreshBody();
+    platforms.create(5635, 1370, 'building1').setScale(1).refreshBody();
+    platforms.create(5640, 1295, 'building1').setScale(1).refreshBody();
+    platforms.create(5645, 1220, 'building1').setScale(1).refreshBody();
+    
+    platforms.create(5945, 1520, 'building1').setScale(1).refreshBody();
+    platforms.create(5870, 1445, 'building1').setScale(1).refreshBody();
+    platforms.create(5765, 1370, 'building1').setScale(1).refreshBody();
+    platforms.create(5720, 1295, 'building1').setScale(1).refreshBody();
     
 
     const name = localStorage.getItem("playerName") || "Anonymous";
@@ -120,7 +194,7 @@ function create() {
     shootCooldown = 500; // 1000 ms = 1 second
 
     localPlayer = this.physics.add.sprite(100, 450, selectedSprite);
-    localPlayer.scale = 0.1;
+    localPlayer.setDisplaySize(32, 32);
 
     localPlayer.setCollideWorldBounds(true);
     localPlayer.setTint(tint);
@@ -307,9 +381,23 @@ function create() {
 
                 var data = shootBulletTowardsMouse('dash');
                 
-                localPlayer.body.velocity.x = data[0].x * 700;
-                localPlayer.body.velocity.y = data[0].y * 700;
+                localPlayer.body.velocity.x = data[0].x * 900;
+                localPlayer.body.velocity.y = data[0].y * 900;
                 dashCooldown = 2000;
+                canDash = false;
+
+                setTimeout(() => {
+                    canDash = true;
+                }, dashCooldown);
+            }
+            if (type == 'superdash'){
+                if (isFrozen || isTyping || !canDash) return;
+
+                var data = shootBulletTowardsMouse('dash');
+                
+                localPlayer.body.velocity.x = data[0].x * 1000;
+                localPlayer.body.velocity.y = data[0].y * 1000;
+                dashCooldown = 0;
                 canDash = false;
 
                 setTimeout(() => {
@@ -854,33 +942,16 @@ function update() {
                         if (bullet.type == 'arrow'){
                         dealDmg(id, 15);
                         }
+                        
+                        if (bullet.type == 'explosion'){
+                        dealDmg(id, 25);
+                        }
+                        
                         if (bullet.type == 'bomb') {
                             // Create the explosion
                             createExplosion(bullet.x, bullet.y, bullet.shooterId);
-
-                            // Create a temporary Phaser rectangle the size of the explosion
-                            const explosionBounds = new Phaser.Geom.Rectangle(
-                                bullet.x - explosionData.displaySize / 2,
-                                bullet.y - explosionData.displaySize / 2,
-                                explosionData.displaySize,
-                                explosionData.displaySize
-                            );
-
-                            // Check for overlap with players immediately
-                            for (let id in otherPlayers) {
-                                const target = otherPlayers[id];
-
-                                if (Phaser.Geom.Intersects.RectangleToRectangle(explosionBounds, target.getBounds())) {
-                                    if (bullet.shooterId !== id) {
-                                        dealDmg(id, 25); // or whatever explosion dmg
-                                        socket.emit('bulletHitPlayer', bullet.id); // optional
-                                    }
-                                }
-                            }
-                        }
-
-                        if (bullet.type == 'explosion'){
-                        dealDmg(id, 25);
+                            socket.emit('createExplosion', {x: bullet.x, y: bullet.y, id: bullet.shooterId});
+                            dealDmg(id, 25);
                         }
                         
                         if (bullet.type == 'shotgun'){
@@ -909,7 +980,7 @@ function update() {
                 }
 
                 // Bullet out of bounds cleanup
-                if (bullet.x < -2000 || bullet.x > 3200 || bullet.y < 100 || bullet.y > 1990) {
+                if (bullet.y > 1990) {
                     bullet.destroy();
                     bullets.splice(index, 1);
                 }
@@ -996,6 +1067,12 @@ socket.on('playerIsFrozen', (id, frozen) => {
     updatePlayerList();
 });
 
+socket.on('explosionCreated', ({x, y, id}) => {
+    if (id != localPlayerId){
+        console.log("client received explosion!");
+        createExplosion(x, y, id);
+    }
+});
 
 
 function destroyBullet(bullet) {
@@ -1013,7 +1090,7 @@ function createOtherPlayer(id, playerData) {
     otherPlayer.setTint(rgbToHexTint(playerData.color));
     otherPlayer.color = playerData.color;
     otherPlayer.name = playerData.name;
-    otherPlayer.scale = 0.1;
+    otherPlayer.setDisplaySize(32, 32);
     otherPlayer.hp = playerData.hp;
     otherPlayer.frozen = false;
 
