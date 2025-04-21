@@ -381,8 +381,8 @@ function create() {
 
                 var data = shootBulletTowardsMouse('dash');
                 
-                localPlayer.body.velocity.x = data[0].x * 900;
-                localPlayer.body.velocity.y = data[0].y * 900;
+                localPlayer.body.velocity.x = data[0].x * 700;
+                localPlayer.body.velocity.y = data[0].y * 700;
                 dashCooldown = 2000;
                 canDash = false;
 
@@ -395,8 +395,8 @@ function create() {
 
                 var data = shootBulletTowardsMouse('dash');
                 
-                localPlayer.body.velocity.x = data[0].x * 800;
-                localPlayer.body.velocity.y = data[0].y * 800;
+                localPlayer.body.velocity.x = data[0].x * 1000;
+                localPlayer.body.velocity.y = data[0].y * 1000;
                 dashCooldown = 0;
                 canDash = false;
 
