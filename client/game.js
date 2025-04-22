@@ -618,8 +618,8 @@ function createBullet(bulletData, id, tint, type){
             // Generate a unique ID for the bullet
             bullet.id = id;
 
-            bullet.body.velocity.x = bulletData.dir.x * 1200;
-            bullet.body.velocity.y = bulletData.dir.y * 1200;    
+            bullet.body.velocity.x = bulletData.dir.x * 1200 + localPlayer.body.velocity.x;
+            bullet.body.velocity.y = bulletData.dir.y * 1200 + localPlayer.body.velocity.y;    
             bullet.shooterId = bulletData.shooterId;
             
             updateBulletRotation(bullet);
@@ -644,8 +644,8 @@ function createBullet(bulletData, id, tint, type){
             // Generate a unique ID for the bullet
             bullet.id = id;
 
-            bullet.body.velocity.x = bulletData.dir.x * bombData.v * 4;
-            bullet.body.velocity.y = bulletData.dir.y * bombData.v * 4;    
+            bullet.body.velocity.x = bulletData.dir.x * bombData.v * 4 + localPlayer.body.velocity.x;
+            bullet.body.velocity.y = bulletData.dir.y * bombData.v * 4 + localPlayer.body.velocity.y;    
             bullet.shooterId = bulletData.shooterId;
             
             updateBulletRotation(bullet);
@@ -671,8 +671,8 @@ function createBullet(bulletData, id, tint, type){
             // Generate a unique ID for the bullet
             bullet.id = id;
 
-            bullet.body.velocity.x = bulletData.dir.x * bombData.v;
-            bullet.body.velocity.y = bulletData.dir.y * bombData.v;    
+            bullet.body.velocity.x = bulletData.dir.x * bombData.v + localPlayer.body.velocity.x;
+            bullet.body.velocity.y = bulletData.dir.y * bombData.v + localPlayer.body.velocity.y;    
             bullet.shooterId = bulletData.shooterId;
             
             updateBulletRotation(bullet);
@@ -699,8 +699,8 @@ function createBullet(bulletData, id, tint, type){
             // Generate a unique ID for the bullet
             bullet.id = id;
 
-            bullet.body.velocity.x = (bulletData.dir.x * shotgunData.v) + randomVelocity;
-            bullet.body.velocity.y = (bulletData.dir.y * shotgunData.v) + randomVelocity;    
+            bullet.body.velocity.x = (bulletData.dir.x * shotgunData.v) + randomVelocity + localPlayer.body.velocity.x;
+            bullet.body.velocity.y = (bulletData.dir.y * shotgunData.v) + randomVelocity + localPlayer.body.velocity.y;    
 
             bullet.shooterId = bulletData.shooterId;
             
@@ -726,8 +726,8 @@ function createBullet(bulletData, id, tint, type){
             // Generate a unique ID for the bullet
             bullet.id = id;
 
-            bullet.body.velocity.x = (bulletData.dir.x * knifeData.v);
-            bullet.body.velocity.y = (bulletData.dir.y * knifeData.v);    
+            bullet.body.velocity.x = (bulletData.dir.x * knifeData.v) + localPlayer.body.velocity.x;
+            bullet.body.velocity.y = (bulletData.dir.y * knifeData.v) + localPlayer.body.velocity.y;    
 
             bullet.shooterId = bulletData.shooterId;
             
@@ -755,8 +755,8 @@ function createBullet(bulletData, id, tint, type){
             // Generate a unique ID for the bullet
             bullet.id = id;
 
-            bullet.body.velocity.x = bulletData.dir.x * ballData.v;
-            bullet.body.velocity.y = bulletData.dir.y * ballData.v;    
+            bullet.body.velocity.x = bulletData.dir.x * ballData.v + localPlayer.body.velocity.x;
+            bullet.body.velocity.y = bulletData.dir.y * ballData.v + localPlayer.body.velocity.y;    
             bullet.shooterId = bulletData.shooterId;
             
             updateBulletRotation(bullet);
