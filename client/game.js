@@ -1005,6 +1005,8 @@ function update() {
                         // Destroy the bullet locally
                         if (bullet.type != 'explosion' && bullet.type != 'ball'){
                         destroyBullet(bullet);
+                        }
+                        if (bullet.type != 'ball'){
                         bullets.splice(index, 1); // Remove bullet from the array
                         }
                         break;
