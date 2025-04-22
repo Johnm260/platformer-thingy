@@ -14,6 +14,7 @@ let shootCooldown2;
 let dashCooldown;
 let selectedSprite = localStorage.getItem('selectedSprite') || 'sprite1';
 console.log(selectedSprite);
+let mousePosition = { x: 0, y: 0 };
 
 let playerColor = JSON.parse(localStorage.getItem("playerColor")) || { red: 255, green: 255, blue: 255 };
 let weapon1 = localStorage.getItem("weapon1");
@@ -299,7 +300,6 @@ function create() {
     let direction = { x: 0, y: 0 };
 
     // Track the mouse position
-    let mousePosition = { x: 0, y: 0 };
     let player = localPlayer;
     // Update mouse position on pointer move
     this.input.on('pointermove', (pointer) => {
