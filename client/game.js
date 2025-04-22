@@ -874,6 +874,8 @@ function drawHPBar(ctx, x, y, hp, maxHP = 100) {
 
 function update() {
     if (localPlayer) {
+        mousePosition.x = pointer.worldX;
+        mousePosition.y = pointer.worldY;
         
         weapon1Elapsed = Math.min(maxWeapon1Cooldown, weapon1Elapsed + this.game.loop.delta);
         weapon2Elapsed = Math.min(maxWeapon2Cooldown, weapon2Elapsed + this.game.loop.delta);
