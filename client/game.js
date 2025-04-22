@@ -15,7 +15,8 @@ let selectedSprite = localStorage.getItem('selectedSprite') || 'sprite1';
 console.log(selectedSprite);
 
 let playerColor = JSON.parse(localStorage.getItem("playerColor")) || { red: 255, green: 255, blue: 255 };
-let weapon1 = localStorage.getItem("weapon1");
+let weapon1 = localStorage.getItem("weapon
+1");
 let weapon2 = localStorage.getItem("weapon2");
 let bullets = [];
 let pelletCount = 14;
@@ -23,7 +24,7 @@ let otherPlayers = {};
 let isFrozen = false;
 let isTyping = false; // Track if the user is typing
 let canDash = true;
-
+var arrowData = 
 var bombData = {size: 16, displaySize: 32, v: 500};
 var shotgunData = {size: 5, displaySize: 10, v: 1500};
 var explosionData = {size: 128, displaySize: 128};
@@ -276,7 +277,7 @@ function create() {
                     y: localPlayer.y,
                     dir: bulletDirection,
                 };
-                shootCooldown = 500;
+                shootCooldown = 400;
                 createBullet(newData, id, bulletTint, 'arrow');
                 canShoot = false;
 
@@ -589,8 +590,8 @@ function createBullet(bulletData, id, tint, type){
             // Generate a unique ID for the bullet
             bullet.id = id;
 
-            bullet.body.velocity.x = bulletData.dir.x * 800;
-            bullet.body.velocity.y = bulletData.dir.y * 800;    
+            bullet.body.velocity.x = bulletData.dir.x * 1200;
+            bullet.body.velocity.y = bulletData.dir.y * 1200;    
             bullet.shooterId = bulletData.shooterId;
             
             updateBulletRotation(bullet);
@@ -940,7 +941,7 @@ function update() {
 
                         // Deal damage to the player
                         if (bullet.type == 'arrow'){
-                        dealDmg(id, 15);
+                        dealDmg(id, 20);
                         }
                         
                         if (bullet.type == 'explosion'){
@@ -963,7 +964,7 @@ function update() {
                         }
                         
                         if (bullet.type == 'ball'){
-                            dealDmg(id, 15);
+                            dealDmg(id, 12);
                             bullet.bounceCount--;
                         }
                         
@@ -971,8 +972,8 @@ function update() {
                         // Destroy the bullet locally
                         if (bullet.type != 'explosion' && bullet.type != 'ball'){
                         destroyBullet(bullet);
-                        }
                         bullets.splice(index, 1); // Remove bullet from the array
+                        }
                         break;
                         }
                     }
