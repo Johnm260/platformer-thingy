@@ -9,7 +9,8 @@ let chatInput
 let chatMessages;
 let playerTint;
 let localPlayerId;
-let shootCooldown;
+let shootCooldown1;
+let shootCooldown2;
 let dashCooldown;
 let selectedSprite = localStorage.getItem('selectedSprite') || 'sprite1';
 console.log(selectedSprite);
@@ -28,6 +29,44 @@ var shotgunData = {size: 5, displaySize: 10, v: 1500};
 var explosionData = {size: 128, displaySize: 128};
 var knifeData = {size: 12, displaySize: 24, v: 1000};
 var ballData = {size: 128, displaySize: 32, v: 750};
+
+let canShoot1 = true;
+let canShoot2 = true;
+let canShoot3 = true;
+let weapon1Elapsed = 0;
+let weapon2Elapsed = 0;
+let dashElapsed = 0;
+
+
+
+const weaponCooldowns = {
+    'arrow': 400,
+    'bomb': 2000,
+    'shotgun': 1000,
+    'knife': 150,
+    'ball': 1000,
+    'evilnuke1234': 0,
+    'dash': 2000,
+    'superdash': 0,
+};
+
+
+// Initialize cooldown times
+let weapon1CooldownTime = 0;
+let weapon2CooldownTime = 0;
+let dashCooldownTime = 0;
+
+// Set maximum cooldown times for the selected weapons
+let maxWeapon1Cooldown = weaponCooldowns[weapon2];
+let maxWeapon2Cooldown = weaponCooldowns[weapon1];
+let maxDashCooldown = weaponCooldowns['dash']; // Dash cooldown remains constant (2000ms)
+
+weapon1Elapsed = maxWeapon1Cooldown;
+weapon2Elapsed = maxWeapon2Cooldown;
+dashElapsed = maxDashCooldown;
+
+// Initialize cooldown bar visuals
+let weapon1CooldownBar, weapon2CooldownBar, dashCooldownBar;
 
 // Create the game instance with Phaser 3
 const config = {
@@ -52,6 +91,9 @@ const config = {
 };
 
 const game = new Phaser.Game(config);
+
+document.getElementById('weapon1-label').textContent = weapon1.charAt(0).toUpperCase() + weapon1.slice(1);
+document.getElementById('weapon2-label').textContent = weapon2.charAt(0).toUpperCase() + weapon2.slice(1);
 
 function preload() {
     this.load.image('sprite0', 'assets/sprite1.png');
@@ -80,6 +122,11 @@ function preload() {
 function create() {
     platforms = this.physics.add.staticGroup();
     notPlatforms = this.physics.add.staticGroup();
+    
+    weapon1CooldownBar = this.add.graphics();
+    weapon2CooldownBar = this.add.graphics();
+    dashCooldownBar = this.add.graphics();
+    
     platforms.create(-750, 1588, 'platform').setScale(1).refreshBody(); 
     platforms.create(-250, 1588, 'platform').setScale(1).refreshBody(); 
     platforms.create(250, 1588, 'platform').setScale(1).refreshBody(); 
@@ -219,8 +266,8 @@ function create() {
     const name = localStorage.getItem("playerName") || "Anonymous";
     const color = JSON.parse(localStorage.getItem("playerColor")) || { red: 255, green: 255, blue: 255 };
     const tint = rgbToHexTint(color);
-    let canShoot = true;
-    shootCooldown = 500; // 1000 ms = 1 second
+    
+    shootCooldown = 500;
 
     localPlayer = this.physics.add.sprite(100, 450, selectedSprite);
     localPlayer.setDisplaySize(32, 32);
@@ -244,6 +291,8 @@ function create() {
     AKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
     SKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
     DKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+    ShiftKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT);
+
     
     this.bulletGroup = this.physics.add.group();
 
@@ -259,16 +308,31 @@ function create() {
     });
 
     this.input.keyboard.on('keydown-E', () => {
-        prepareBullet(weapon2);
+        prepareBullet(weapon2, 1);
     });
 
     this.input.keyboard.on('keydown-Q', () => {
-        prepareBullet(weapon1);
+        prepareBullet(weapon1, 2);
     });
     
-    function prepareBullet(type){
-        if (type == 'evilnuke1234'){
-                    if (isFrozen || isTyping || !canShoot) return;
+    this.input.keyboard.on('keydown-SHIFT', () => {
+        prepareBullet('dash', 3);
+    });
+
+    
+    function prepareBullet(type, cd){
+        if (cd == 1){
+            canShoot = canShoot1;
+        }
+        if (cd == 2){
+            canShoot = canShoot2;
+        }
+        if (cd == 3){
+            canShoot = canShoot3;
+        }
+        
+        if (isFrozen || isTyping || !canShoot) return;
+            if (type == 'evilnuke1234'){      
 
                     var data = shootBulletTowardsMouse('bomb');
                     var bulletDirection = data[0];
@@ -286,14 +350,8 @@ function create() {
                     };
                     shootCooldown = 0;
                     createBullet(newData, id, bulletTint, 'evilnuke1234');
-                    canShoot = false;
-
-                    setTimeout(() => {
-                        canShoot = true;
-                    }, shootCooldown);
                 }
         if (type == 'arrow'){
-                if (isFrozen || isTyping || !canShoot) return;
 
                 var data = shootBulletTowardsMouse('arrow');
                 var bulletDirection = data[0];
@@ -307,14 +365,8 @@ function create() {
                 };
                 shootCooldown = 400;
                 createBullet(newData, id, bulletTint, 'arrow');
-                canShoot = false;
-
-                setTimeout(() => {
-                    canShoot = true;
-                }, shootCooldown);
             }
             if (type == 'bomb'){
-                if (isFrozen || isTyping || !canShoot) return;
 
                 var data = shootBulletTowardsMouse('bomb');
                 var bulletDirection = data[0];
@@ -329,14 +381,8 @@ function create() {
                 };
                 shootCooldown = 2000;
                 createBullet(newData, id, bulletTint, 'bomb');
-                canShoot = false;
-
-                setTimeout(() => {
-                    canShoot = true;
-                }, shootCooldown);
             }
             if (type == 'shotgun'){
-                if (isFrozen || isTyping || !canShoot) return;
                     for (var i = 0; i < pelletCount; i++){
                         var data = shootBulletTowardsMouse('shotgun');
                         var bulletDirection = data[0];
@@ -351,17 +397,12 @@ function create() {
                             y: localPlayer.y,
                             dir: bulletDirection,
                             speed: 200,
-                        };
+                        }
                         shootCooldown = 1000;
                         createBullet(newData, id, bulletTint, 'shotgun');
-                        canShoot = false;
-                    }
-                setTimeout(() => {
-                    canShoot = true;
-                }, shootCooldown);
+                        }
             }
             if (type == 'knife'){
-                if (isFrozen || isTyping || !canShoot) return;
                     var data = shootBulletTowardsMouse('knife');
                     var bulletDirection = data[0];
                     var offset = (Math.random() * (0.05) - 0.025);
@@ -378,13 +419,8 @@ function create() {
                     };
                     shootCooldown = 150;
                     createBullet(newData, id, bulletTint, 'knife');
-                    canShoot = false;
-                setTimeout(() => {
-                    canShoot = true;
-                }, shootCooldown);
             }
             if (type == 'ball'){
-                if (isFrozen || isTyping || !canShoot) return;
 
                 var data = shootBulletTowardsMouse('ball');
                 var bulletDirection = data[0];
@@ -399,40 +435,39 @@ function create() {
                 };
                 shootCooldown = 1000;
                 createBullet(newData, id, bulletTint, 'ball');
-                canShoot = false;
-
-                setTimeout(() => {
-                    canShoot = true;
-                }, shootCooldown);
             }
             if (type == 'dash'){
-                if (isFrozen || isTyping || !canDash) return;
 
                 var data = shootBulletTowardsMouse('dash');
-                
+                shootCooldown = 2000;
                 localPlayer.body.velocity.x = data[0].x * 700;
                 localPlayer.body.velocity.y = data[0].y * 700;
-                dashCooldown = 2000;
-                canDash = false;
-
-                setTimeout(() => {
-                    canDash = true;
-                }, dashCooldown);
             }
             if (type == 'superdash'){
-                if (isFrozen || isTyping || !canDash) return;
 
                 var data = shootBulletTowardsMouse('dash');
                 
                 localPlayer.body.velocity.x = data[0].x * 1000;
                 localPlayer.body.velocity.y = data[0].y * 1000;
-                dashCooldown = 0;
-                canDash = false;
-
-                setTimeout(() => {
-                    canDash = true;
-                }, dashCooldown);
             }
+            
+            if (cd == 1){
+                canShoot1 = false;
+                weapon1Elapsed = 0; // RESET elapsed
+                setTimeout(() => { canShoot1 = true; }, shootCooldown);
+            }
+            if (cd == 2){
+                canShoot2 = false;
+                weapon2Elapsed = 0;
+                setTimeout(() => { canShoot2 = true; }, shootCooldown);
+            }
+            if (cd == 3){
+                canShoot3 = false;
+                dashElapsed = 0;
+                setTimeout(() => { canShoot3 = true; }, shootCooldown);
+            }
+
+
     }
 
 
@@ -839,6 +874,26 @@ function drawHPBar(ctx, x, y, hp, maxHP = 100) {
 
 function update() {
     if (localPlayer) {
+        
+        weapon1Elapsed = Math.min(maxWeapon1Cooldown, weapon1Elapsed + this.game.loop.delta);
+        weapon2Elapsed = Math.min(maxWeapon2Cooldown, weapon2Elapsed + this.game.loop.delta);
+        dashElapsed = Math.min(maxDashCooldown, dashElapsed + this.game.loop.delta);
+        
+        const w1Percent = weapon1Elapsed / maxWeapon1Cooldown;
+        const w2Percent = weapon2Elapsed / maxWeapon2Cooldown;
+        const dashPercent = dashElapsed / maxDashCooldown;
+
+        document.querySelector('#weapon1-bar .fill').style.width = `${Math.floor(w2Percent * 100)}%`;
+        document.querySelector('#weapon2-bar .fill').style.width = `${Math.floor(w1Percent * 100)}%`;
+        document.querySelector('#dash-bar .fill').style.width = `${Math.floor(dashPercent * 100)}%`;
+        
+        document.querySelector('#weapon1-bar .fill').style.background = '#ff4444'; // red
+        document.querySelector('#weapon2-bar .fill').style.background = '#4488ff'; // blue
+        document.querySelector('#dash-bar .fill').style.background = '#44ff88'; // green
+
+
+
+
         const { x, y, hp, hpBar, hpBarBg } = localPlayer;
         
         if (localPlayer.y > 1800){
@@ -1023,6 +1078,8 @@ function update() {
 
         // Emit player data (position, velocity, and acceleration) to the server
         socket.emit('playerMove', playerData);
+    } else {
+        localPlayer.setVelocityX(localPlayer.body.velocity.x * 0.8);
     }
 }
 

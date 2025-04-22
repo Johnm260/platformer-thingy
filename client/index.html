@@ -68,7 +68,7 @@
         #coordinates-list {
             position: absolute;
             bottom: 10px;
-            left: 10px;
+            right: 10px;
             background: rgba(255, 255, 255, 0.4);
             border: 1px solid #000;
             border-radius: 5px;
@@ -79,9 +79,48 @@
             max-width: 200px;
             z-index: 10;
         }
+        
+        #cooldown-bars {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        .cooldown-bar {
+            width: 100px;
+            height: 10px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid #000;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .cooldown-bar .fill {
+            height: 100%;
+            width: 100%;
+            background: limegreen;
+            transition: width 0.1s ease-out;
+        }
+        .cooldown-bar-label {
+            font-size: 14px;
+            font-family:'Courier New'
+        }
+
     </style>
 </head>
 <body>
+  <div id="cooldown-bars">
+      <div id="weapon1-label" class="cooldown-bar-label">Weapon 1</div>
+      <div class="cooldown-bar" id="weapon1-bar"><div class="fill"></div></div>
+      <div id="weapon2-label" class="cooldown-bar-label">Weapon 2</div>
+      <div class="cooldown-bar" id="weapon2-bar"><div class="fill"></div></div>
+      <div id="dash-label" class="cooldown-bar-label">Dash</div>
+      <div class="cooldown-bar" id="dash-bar"><div class="fill"></div></div>
+  </div>
+
     <div id="player-list"></div>
     <div id="coordinates-list"></div>
 
