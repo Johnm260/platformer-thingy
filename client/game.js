@@ -63,6 +63,10 @@ function preload() {
     this.load.image('platform2', 'assets/platform2.png');
     this.load.image('cityPlatform', 'assets/cityPlatform.png');
     this.load.image('building1', 'assets/building1.png');
+    this.load.image('portal', 'assets/portal.png');
+    this.load.image('redplatform1', 'assets/redplatform1.png');
+    this.load.image('redplatform2', 'assets/redplatform2.png');
+    this.load.image('lava', 'assets/lava.png');
 
     this.load.image('arrow', 'assets/arrow.png');
     this.load.image('bomb', 'assets/bomb.png');
@@ -75,12 +79,36 @@ function preload() {
 
 function create() {
     platforms = this.physics.add.staticGroup();
+    notPlatforms = this.physics.add.staticGroup();
     platforms.create(-750, 1588, 'platform').setScale(1).refreshBody(); 
     platforms.create(-250, 1588, 'platform').setScale(1).refreshBody(); 
     platforms.create(250, 1588, 'platform').setScale(1).refreshBody(); 
     platforms.create(750, 1588, 'platform').setScale(1).refreshBody(); 
     platforms.create(1250, 1588, 'platform').setScale(1).refreshBody();
     platforms.create(1750, 1588, 'platform').setScale(1).refreshBody();
+    
+    platforms.create(-8000, 1588, 'redplatform1').setScale(1).refreshBody();
+    platforms.create(-8500, 1588, 'redplatform1').setScale(1).refreshBody();
+    platforms.create(-9000, 1588, 'redplatform1').setScale(1).refreshBody();
+    platforms.create(-7500, 1588, 'redplatform1').setScale(1).refreshBody();
+    platforms.create(-7000, 1588, 'redplatform1').setScale(1).refreshBody();
+    notPlatforms.create(-9500, 1588, 'lava').setScale(1).refreshBody();
+    notPlatforms.create(-10000, 1588, 'lava').setScale(1).refreshBody();
+    notPlatforms.create(-10500, 1588, 'lava').setScale(1).refreshBody();
+    notPlatforms.create(-6500, 1588, 'lava').setScale(1).refreshBody();
+    notPlatforms.create(-6000, 1588, 'lava').setScale(1).refreshBody();
+    notPlatforms.create(-5500, 1588, 'lava').setScale(1).refreshBody();
+    
+    platforms.create(-7000, 1400, 'redplatform2').setScale(1).refreshBody();
+    platforms.create(-7500, 1400, 'redplatform2').setScale(1).refreshBody();
+    platforms.create(-8000, 1400, 'redplatform2').setScale(1).refreshBody();
+    platforms.create(-8500, 1400, 'redplatform2').setScale(1).refreshBody();
+    platforms.create(-9000, 1400, 'redplatform2').setScale(1).refreshBody();
+    
+    platforms.create(-7250, 1200, 'redplatform2').setScale(1).refreshBody();
+    platforms.create(-7750, 1200, 'redplatform2').setScale(1).refreshBody();
+    platforms.create(-8250, 1200, 'redplatform2').setScale(1).refreshBody();
+    platforms.create(-8750, 1200, 'redplatform2').setScale(1).refreshBody();
     
     platforms.create(2250, 1588, 'cityPlatform').setScale(1).refreshBody();
     platforms.create(2750, 1588, 'cityPlatform').setScale(1).refreshBody();
@@ -185,6 +213,8 @@ function create() {
     platforms.create(5765, 1370, 'building1').setScale(1).refreshBody();
     platforms.create(5720, 1295, 'building1').setScale(1).refreshBody();
     
+    notPlatforms.create(-750, 1445, 'portal').setScale(1).refreshBody(); 
+    
 
     const name = localStorage.getItem("playerName") || "Anonymous";
     const color = JSON.parse(localStorage.getItem("playerColor")) || { red: 255, green: 255, blue: 255 };
@@ -201,8 +231,8 @@ function create() {
     this.physics.add.collider(localPlayer, platforms);
     localPlayer.hp = 100;
         
-    this.cameras.main.setBounds(-2000, 0, 15000, 1600);
-    this.physics.world.setBounds(-2000, 0, 15000, 2000);
+    this.cameras.main.setBounds(-20000, 0, 35000, 1600);
+    this.physics.world.setBounds(-20000, 0, 35000, 2000);
     this.cameras.main.startFollow(localPlayer);
     
     // Create HP bar graphics and black border
@@ -815,6 +845,11 @@ function update() {
             takeDmg(100);
         }
         
+        if (Math.abs(localPlayer.body.x + 760)<= 20 && Math.abs(localPlayer.body.y - 1450) <= 30){
+            socket.emit('teleport', (localPlayerId));
+            console.log("tp sent");
+        }
+        
         const barWidth = 40;
         const barHeight = 6;
         const hpRatio = Phaser.Math.Clamp(hp / 100, 0, 1);
@@ -1071,6 +1106,11 @@ socket.on('explosionCreated', ({x, y, id}) => {
         console.log("client received explosion!");
         createExplosion(x, y, id);
     }
+});
+
+socket.on('teleported', ({x}) =>{
+    console.log(x);
+    localPlayer.setPosition(-8000, 1520);
 });
 
 

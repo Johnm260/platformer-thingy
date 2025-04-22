@@ -193,7 +193,11 @@ io.on('connection', (socket) => {
         console.log("server received explosion!");
         socket.broadcast.emit('explosionCreated', {x, y, id});
     });
-
+    
+    socket.on('teleport', (id) => {
+        players[socket.id].x = -4000;
+        socket.emit('teleported', {x: players[socket.id].x});
+    });
 
 });
     
