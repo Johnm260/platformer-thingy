@@ -369,32 +369,27 @@
     document.getElementById("startButton").addEventListener("click", () => {
         var selectedWeapon1 = document.getElementById("weapon1").value;
         var selectedWeapon2 = document.getElementById("weapon2").value;
-        
-        if (selectedWeapon1 == selectedWeapon2){
-          alert("You must pick two different weapons!");
-        } else {
           
-          const playerName = document.getElementById("playerName").value;
-          if (playerName) {
-              const red = redSlider.value;
-              const green = greenSlider.value;
-              const blue = blueSlider.value;
+      const playerName = document.getElementById("playerName").value;
+      if (playerName) {
+          const red = redSlider.value;
+          const green = greenSlider.value;
+          const blue = blueSlider.value;
 
-              if (!(currentSpriteIndex > -1)){
-                  currentSpriteIndex = 0;
-              }
-              localStorage.setItem("selectedSprite", "sprite" + currentSpriteIndex);
-              localStorage.setItem("spriteIndex", currentSpriteIndex);
-              localStorage.setItem("playerName", playerName);
-              localStorage.setItem("playerColor", JSON.stringify({ red, green, blue }));
-              localStorage.setItem("weapon1", selectedWeapon1);
-              localStorage.setItem("weapon2", selectedWeapon2);
-
-              window.location.href = "index.html";
-          } else {
-              alert("Please enter a name.");
+          if (!(currentSpriteIndex > -1)){
+              currentSpriteIndex = 0;
           }
-        }
+          localStorage.setItem("selectedSprite", "sprite" + currentSpriteIndex);
+          localStorage.setItem("spriteIndex", currentSpriteIndex);
+          localStorage.setItem("playerName", playerName);
+          localStorage.setItem("playerColor", JSON.stringify({ red, green, blue }));
+          localStorage.setItem("weapon1", selectedWeapon1);
+          localStorage.setItem("weapon2", selectedWeapon2);
+
+          window.location.href = "index.html";
+      } else {
+          alert("Please enter a name.");
+      }
     });
 
     // Initial load
