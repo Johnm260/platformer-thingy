@@ -15,8 +15,7 @@ let selectedSprite = localStorage.getItem('selectedSprite') || 'sprite1';
 console.log(selectedSprite);
 
 let playerColor = JSON.parse(localStorage.getItem("playerColor")) || { red: 255, green: 255, blue: 255 };
-let weapon1 = localStorage.getItem("weapon
-1");
+let weapon1 = localStorage.getItem("weapon1");
 let weapon2 = localStorage.getItem("weapon2");
 let bullets = [];
 let pelletCount = 14;
@@ -24,7 +23,6 @@ let otherPlayers = {};
 let isFrozen = false;
 let isTyping = false; // Track if the user is typing
 let canDash = true;
-var arrowData = 
 var bombData = {size: 16, displaySize: 32, v: 500};
 var shotgunData = {size: 5, displaySize: 10, v: 1500};
 var explosionData = {size: 128, displaySize: 128};
