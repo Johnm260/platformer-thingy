@@ -1078,6 +1078,8 @@ function update() {
 
         // Emit player data (position, velocity, and acceleration) to the server
         socket.emit('playerMove', playerData);
+        mousePosition.x = pointer.worldX;
+        mousePosition.y = pointer.worldY;
     } else {
         localPlayer.setVelocityX(localPlayer.body.velocity.x * 0.8);
     }
