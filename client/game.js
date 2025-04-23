@@ -830,6 +830,7 @@ function createExplosion(x,y,shooter){
     
     setTimeout(() => {
         explosion.destroy();
+        bullets = bullets.filter(b => b !== explosion);
     }, 300);
 
 }
