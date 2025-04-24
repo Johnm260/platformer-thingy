@@ -5,6 +5,7 @@ let platforms;
 let floatPlatforms;
 let WKey, AKey, SKey, DKey;
 let localPlayer;
+let skateboard;
 let chatInput
 let chatMessages;
 let playerTint;
@@ -37,6 +38,7 @@ let canShoot3 = true;
 let weapon1Elapsed = 0;
 let weapon2Elapsed = 0;
 let dashElapsed = 0;
+let canSkate = true;
 
 
 
@@ -49,6 +51,7 @@ const weaponCooldowns = {
     'evilnuke1234': 0,
     'dash': 2000,
     'superdash': 0,
+    'skateboard': 300,
 };
 
 
@@ -96,6 +99,10 @@ const game = new Phaser.Game(config);
 document.getElementById('weapon1-label').textContent = weapon1.charAt(0).toUpperCase() + weapon1.slice(1);
 document.getElementById('weapon2-label').textContent = weapon2.charAt(0).toUpperCase() + weapon2.slice(1);
 
+if (weapon1 === "skateboard"){
+    document.getElementById("weapon2-bar").remove();
+}
+
 function preload() {
     this.load.image('sprite0', 'assets/sprite1.png');
     this.load.image('sprite1', 'assets/sprite2.png');
@@ -117,6 +124,7 @@ function preload() {
     this.load.image('knife', 'assets/knife.png');
     this.load.image('ball', 'assets/ball.png');
     this.load.image('explosion', 'assets/explosion.png');
+    this.load.image('skateboard', 'assets/skateboard.png');
 }
 
 
@@ -270,7 +278,16 @@ function create() {
     
     shootCooldown = 500;
 
+
+    if (weapon1 === "skateboard"){
+        skateboard = this.physics.add.sprite(100, 450, 'skateboard');
+        skateboard.setDisplaySize(44, 16);
+        skateboard.body.setAllowGravity(false);
+    }
     localPlayer = this.physics.add.sprite(100, 450, selectedSprite);
+    if (weapon1 === "skateboard"){
+        localPlayer.setSize(320,400);
+    }
     localPlayer.setDisplaySize(32, 32);
 
     localPlayer.setCollideWorldBounds(true);
@@ -461,6 +478,16 @@ function create() {
                 
                 localPlayer.body.velocity.x = data[0].x * 1000;
                 localPlayer.body.velocity.y = data[0].y * 1000;
+            }
+            if (type == 'skateboard'){
+                if (Math.abs(localPlayer.body.velocity.x) < 1500){
+                    if (localPlayer.body.velocity.x > 0){
+                        localPlayer.body.velocity.x = localPlayer.body.velocity.x + 200;
+                    } else {
+                        localPlayer.body.velocity.x = localPlayer.body.velocity.x - 200;
+                    }
+                    shootCooldown = 300;
+                }
             }
             
             if (cd == 1){
@@ -919,11 +946,15 @@ function update() {
         const dashPercent = dashElapsed / maxDashCooldown;
 
         document.querySelector('#weapon1-bar .fill').style.width = `${Math.floor(w2Percent * 100)}%`;
+        if (document.querySelector('#weapon2-bar .fill')){
         document.querySelector('#weapon2-bar .fill').style.width = `${Math.floor(w1Percent * 100)}%`;
+        }
         document.querySelector('#dash-bar .fill').style.width = `${Math.floor(dashPercent * 100)}%`;
         
         document.querySelector('#weapon1-bar .fill').style.background = '#ff4444'; // red
+        if (document.querySelector('#weapon2-bar .fill')){
         document.querySelector('#weapon2-bar .fill').style.background = '#4488ff'; // blue
+        }
         document.querySelector('#dash-bar .fill').style.background = '#44ff88'; // green
 
 
@@ -1000,41 +1031,65 @@ function update() {
             updateBulletRotation(bullet);
         }
     });
-    if (!isFrozen && !isTyping) {  // Only allow movement if not typing
-        if (AKey.isDown) {
-            if (localPlayer.body.touching.down){
-                localPlayer.setVelocityX(-250);
-            } else {
-                if (localPlayer.body.velocity.x > -250){
-                localPlayer.body.velocity.x += -40;
-                    if (localPlayer.body.velocity.x < -250){
-                        localPlayer.body.velocity.x = -250;
+    if (weapon1 != 'skateboard'){
+        if (!isFrozen && !isTyping) {  // Only allow movement if not typing
+            if (AKey.isDown) {
+                if (localPlayer.body.touching.down){
+                    localPlayer.setVelocityX(-250);
+                } else {
+                    if (localPlayer.body.velocity.x > -250){
+                    localPlayer.body.velocity.x += -40;
+                        if (localPlayer.body.velocity.x < -250){
+                            localPlayer.body.velocity.x = -250;
+                        }
                     }
                 }
-            }
-        } else if (DKey.isDown) {
-            if (localPlayer.body.touching.down){
-                localPlayer.setVelocityX(250);
-            } else {
-                if (localPlayer.body.velocity.x < 250){
-                    localPlayer.body.velocity.x += 40;
-                    if (localPlayer.body.velocity.x > 250){
-                        localPlayer.body.velocity.x = 250;
+            } else if (DKey.isDown) {
+                if (localPlayer.body.touching.down){
+                    localPlayer.setVelocityX(250);
+                } else {
+                    if (localPlayer.body.velocity.x < 250){
+                        localPlayer.body.velocity.x += 40;
+                        if (localPlayer.body.velocity.x > 250){
+                            localPlayer.body.velocity.x = 250;
+                        }
                     }
                 }
+            } else {
+                if (localPlayer.body.touching.down){
+                    localPlayer.setVelocityX(localPlayer.body.velocity.x * 0.8);
+                    }  else {
+                    localPlayer.setVelocityX(localPlayer.body.velocity.x * 0.99);
+                    }
             }
-        } else {
-            if (localPlayer.body.touching.down){
-                localPlayer.setVelocityX(localPlayer.body.velocity.x * 0.8);
-                }  else {
-                localPlayer.setVelocityX(localPlayer.body.velocity.x * 0.99);
+
+            if (WKey.isDown && localPlayer.body.touching.down) {
+                localPlayer.setVelocityY(-550);
+            }
+        }
+    } else {
+        if (!isFrozen && !isTyping) {  // Only allow movement if not typing
+            if (AKey.isDown) {  
+                if (localPlayer.body.velocity.x > -450){
+                localPlayer.body.velocity.x += -30;
                 }
-        }
+            } else if (DKey.isDown) {
+                if (localPlayer.body.velocity.x < 450){
+                    localPlayer.body.velocity.x += 30;
+                }
+            } else {
+                if (localPlayer.body.touching.down){
+                    localPlayer.setVelocityX(localPlayer.body.velocity.x * 0.8);
+                    }  else {
+                    localPlayer.setVelocityX(localPlayer.body.velocity.x * 0.8);
+                    }
+            }
 
-        if (WKey.isDown && localPlayer.body.touching.down) {
-            localPlayer.setVelocityY(-550);
+            if (WKey.isDown && localPlayer.body.touching.down) {
+                localPlayer.setVelocityY(-650);
+            }
         }
-
+    }
         // Send position, velocity, and local player acceleration to the server
         const playerData = {
             id: socket.id,
@@ -1110,11 +1165,34 @@ function update() {
                 }
             });
         }
+        
+    if (weapon1 === "skateboard" && canSkate == true){
+        var didHit = false;
+        for (let id in otherPlayers) {
+            const target = otherPlayers[id];
+            const local = localPlayer
+            if (Phaser.Geom.Intersects.RectangleToRectangle(local.getBounds(), target.getBounds())) {  
+                if (Math.abs(local.body.velocity.x) > Math.abs(target.body.velocity.x)){
+                    dealDmg(id, 20);
+                    console.log(id);
+                    didHit = true;
+                }
+            }
+        }
+        if (didHit == true){
+            canSkate = false;
+            
+            setTimeout(() => {
+                canSkate = true;
+            }, 1000);
+        }
+    }
 
-        // Emit player data (position, velocity, and acceleration) to the server
-        socket.emit('playerMove', playerData);
-    } else {
-        localPlayer.setVelocityX(localPlayer.body.velocity.x * 0.8);
+    // Emit player data (position, velocity, and acceleration) to the server
+    socket.emit('playerMove', playerData);
+    if (skateboard){
+        skateboard.body.x = localPlayer.body.x - 7;
+        skateboard.body.y = localPlayer.body.y + 28;
     }
 }
 

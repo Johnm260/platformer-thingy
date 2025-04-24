@@ -255,6 +255,13 @@
     const blueNumber = document.getElementById("blueNumber");
     const canvas = document.getElementById("colorPreview");
     const ctx = canvas.getContext("2d");
+    const weapon1Select = document.getElementById("weapon1");
+    const weapon2Select = document.getElementById("weapon2");
+    const secretWeaponValue = "skateboard";
+    const secretWeaponText = "Skateboard";
+    
+    
+    checkSecretWeaponCondition();
     document.getElementById("weapon1").value = localStorage.getItem("weapon1");
     document.getElementById("weapon2").value = localStorage.getItem("weapon2");
 
@@ -330,6 +337,50 @@
             updateColorPreview(); // Apply current color to the new sprite
         };
     }
+    
+    
+
+    // Function to add the secret weapon if the conditions are met
+    function checkSecretWeaponCondition() {
+      
+        const w1 = weapon1Select.value;
+        const w2 = weapon2Select.value;
+
+        if (w1 === "skateboard"){
+          weapon2Select.value = 'none';
+        }
+
+        // Check if conditions are met
+        if ((w1 === "arrow" && w2 === "knife") ||  w1 === "skateboard" || localStorage.weapon1 === "skateboard") {
+            let alreadyExists = Array.from(weapon1Select.options).some(
+                opt => opt.value === secretWeaponValue
+            );
+            if (localStorage.weapon1 === "skateboard"){
+                weapon1Select.value = 'skateboard';
+            }
+            if (!alreadyExists) {
+                let option = document.createElement("option");
+                option.value = secretWeaponValue;
+                option.text = secretWeaponText;
+                weapon1Select.appendChild(option);
+            }
+        } else {
+            // Remove it if it's there but conditions aren't met
+            Array.from(weapon1Select.options).forEach((opt, idx) => {
+                if (opt.value === secretWeaponValue) {
+                    weapon1Select.remove(idx);
+                }
+            });
+        }
+    }
+
+    // Add event listeners to both weapon selectors
+    weapon1Select.addEventListener("change", checkSecretWeaponCondition);
+    weapon2Select.addEventListener("change", checkSecretWeaponCondition);
+
+    // Call on initial load too, in case they were pre-filled
+    checkSecretWeaponCondition();
+
 
     // Sprite switching buttons
     document.getElementById("prevSprite").addEventListener("click", () => {
