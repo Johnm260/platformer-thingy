@@ -332,28 +332,29 @@ function create() {
         }
         
         if (isFrozen || isTyping || !canShoot) return;
-            if (type == 'evilnuke1234'){      
-
-                    var data = shootBulletTowardsMouse('bomb');
-                    var bulletDirection = data[0];
-                    var offset = (Math.random() * (0.3) - 0.15);
-                    bulletDirection.x += offset;
-                    bulletDirection.y -= offset;
-                    var id = data[1];
-                    var bulletTint = data[2];
-                    var newData = {
-                        shooterId: localPlayerId,
-                        x: localPlayer.x,
-                        y: localPlayer.y,
-                        dir: bulletDirection,
-                        speed: 200,
-                    };
-                    shootCooldown = 0;
-                    createBullet(newData, id, bulletTint, 'evilnuke1234');
-                }
+            if (type == 'evilnuke1234'){
+                var bonusVelocity = {x: localPlayer.body.velocity.x, y: localPlayer.body.velocity.y};    
+                var offset = (Math.random() * (0.3) - 0.15);
+                var data = shootBulletTowardsMouse('evilnuke1234', bonusVelocity, offset);
+                var bulletDirection = data[0];
+                bulletDirection.x += offset;
+                bulletDirection.y -= offset;
+                var id = data[1];
+                var bulletTint = data[2];
+                var newData = {
+                    shooterId: localPlayerId,
+                    x: localPlayer.x,
+                    y: localPlayer.y,
+                    dir: bulletDirection,
+                    bonusV: bonusVelocity,
+                    speed: 200,
+                };
+                shootCooldown = 0;
+                createBullet(newData, id, bulletTint, 'evilnuke1234');
+            }
         if (type == 'arrow'){
-
-                var data = shootBulletTowardsMouse('arrow');
+                var bonusVelocity = {x: localPlayer.body.velocity.x, y: localPlayer.body.velocity.y};
+                var data = shootBulletTowardsMouse('arrow', bonusVelocity);
                 var bulletDirection = data[0];
                 var id = data[1];
                 var bulletTint = data[2];
@@ -362,13 +363,14 @@ function create() {
                     x: localPlayer.x,
                     y: localPlayer.y,
                     dir: bulletDirection,
+                    bonusV: bonusVelocity,
                 };
                 shootCooldown = 400;
                 createBullet(newData, id, bulletTint, 'arrow');
             }
             if (type == 'bomb'){
-
-                var data = shootBulletTowardsMouse('bomb');
+                var bonusVelocity = {x: localPlayer.body.velocity.x, y: localPlayer.body.velocity.y};
+                var data = shootBulletTowardsMouse('bomb', bonusVelocity);
                 var bulletDirection = data[0];
                 var id = data[1];
                 var bulletTint = data[2];
@@ -377,6 +379,7 @@ function create() {
                     x: localPlayer.x,
                     y: localPlayer.y,
                     dir: bulletDirection,
+                    bonusV: bonusVelocity,
                     speed: 200,
                 };
                 shootCooldown = 2000;
@@ -384,11 +387,16 @@ function create() {
             }
             if (type == 'shotgun'){
                     for (var i = 0; i < pelletCount; i++){
-                        var data = shootBulletTowardsMouse('shotgun');
-                        var bulletDirection = data[0];
+                        var bonusVelocity = {
+                            x: localPlayer.body.velocity.x + ((Math.random() * 200) - 100),
+                            y: localPlayer.body.velocity.y + ((Math.random() * 200) - 100)
+                            };
                         var offset = (Math.random() * (0.3) - 0.15);
+                        var data = shootBulletTowardsMouse('shotgun', bonusVelocity, offset);
+                        var bulletDirection = data[0];
                         bulletDirection.x += offset;
                         bulletDirection.y -= offset;
+                        var randomVelocity = (Math.random() * 200) - 100;
                         var id = data[1];
                         var bulletTint = data[2];
                         var newData = {
@@ -396,6 +404,7 @@ function create() {
                             x: localPlayer.x,
                             y: localPlayer.y,
                             dir: bulletDirection,
+                            bonusV: bonusVelocity,
                             speed: 200,
                         }
                         shootCooldown = 1000;
@@ -403,9 +412,10 @@ function create() {
                         }
             }
             if (type == 'knife'){
-                    var data = shootBulletTowardsMouse('knife');
-                    var bulletDirection = data[0];
+                    var bonusVelocity = {x: localPlayer.body.velocity.x, y: localPlayer.body.velocity.y};
                     var offset = (Math.random() * (0.05) - 0.025);
+                    var data = shootBulletTowardsMouse('knife', bonusVelocity, offset);
+                    var bulletDirection = data[0];
                     bulletDirection.x += offset;
                     bulletDirection.y -= offset;
                     var id = data[1];
@@ -415,14 +425,15 @@ function create() {
                         x: localPlayer.x,
                         y: localPlayer.y,
                         dir: bulletDirection,
+                        bonusV: bonusVelocity,
                         speed: 200,
                     };
                     shootCooldown = 150;
                     createBullet(newData, id, bulletTint, 'knife');
             }
             if (type == 'ball'){
-
-                var data = shootBulletTowardsMouse('ball');
+                var bonusVelocity = {x: localPlayer.body.velocity.x, y: localPlayer.body.velocity.y};
+                var data = shootBulletTowardsMouse('ball', bonusVelocity);
                 var bulletDirection = data[0];
                 var id = data[1];
                 var bulletTint = data[2];
@@ -431,6 +442,7 @@ function create() {
                     x: localPlayer.x,
                     y: localPlayer.y,
                     dir: bulletDirection,
+                    bonusV: bonusVelocity,
                     speed: 200,
                 };
                 shootCooldown = 1000;
@@ -473,19 +485,26 @@ function create() {
 
 
     // Function to calculate the direction and shoot a bullet towards the mouse
-    function shootBulletTowardsMouse(type) {
+    function shootBulletTowardsMouse(type, bonusVelocity, rand) {
         // Calculate direction towards mouse (relative to player position)
         let dx = mousePosition.x - player.x;
         let dy = mousePosition.y - player.y;
+        
+        if (rand == null){
+        rand = 0;
+                    var offset = (Math.random() * (0.05) - 0.025);
+        }
 
         // Normalize the direction vector
         let magnitude = Math.sqrt(dx * dx + dy * dy);
         let normalizedDirection = { x: dx / magnitude, y: dy / magnitude };
+        normalizedDirection.x += rand;
+        normalizedDirection.y -= rand;
 
         // Fire the bullet in that direction
         let id = generateBulletId();  // Ensure unique bullet IDs
         const tint = playerTint;
-        socket.emit('shootBullet', { direction: normalizedDirection, id, tint, type});
+        socket.emit('shootBullet', {direction: normalizedDirection, id, tint, type, bonusV: bonusVelocity});
         return [normalizedDirection, id, tint, type];
     }
 
@@ -603,6 +622,7 @@ function create() {
     });
     
     socket.on('bulletFired', (bulletData, id, tint, type) => {
+    console.log(bulletData, id, tint,  type);
         if (bulletData.shooterId != localPlayerId){
             createBullet(bulletData, id, tint, type);
         }
@@ -653,8 +673,8 @@ function createBullet(bulletData, id, tint, type){
             // Generate a unique ID for the bullet
             bullet.id = id;
 
-            bullet.body.velocity.x = bulletData.dir.x * 1200 + localPlayer.body.velocity.x;
-            bullet.body.velocity.y = bulletData.dir.y * 1200 + localPlayer.body.velocity.y;    
+            bullet.body.velocity.x = bulletData.dir.x * 1200 + bulletData.bonusV.x;
+            bullet.body.velocity.y = bulletData.dir.y * 1200 + bulletData.bonusV.y;    
             bullet.shooterId = bulletData.shooterId;
             
             updateBulletRotation(bullet);
@@ -673,17 +693,23 @@ function createBullet(bulletData, id, tint, type){
             bullet.setTint(tint);
             bullet.setCollideWorldBounds(false);
             bullet.body.onWorldBounds = false;
-            bullet.body.allowGravity = true;
+            bullet.body.allowGravity = false;
             bullet.type = 'bomb';
 
             // Generate a unique ID for the bullet
             bullet.id = id;
 
-            bullet.body.velocity.x = bulletData.dir.x * bombData.v * 4 + localPlayer.body.velocity.x;
-            bullet.body.velocity.y = bulletData.dir.y * bombData.v * 4 + localPlayer.body.velocity.y;    
+            bullet.body.velocity.x = bulletData.dir.x * 3000 + bulletData.bonusV.x;
+            bullet.body.velocity.y = bulletData.dir.y * 3000 + bulletData.bonusV.y;    
             bullet.shooterId = bulletData.shooterId;
             
             updateBulletRotation(bullet);
+            
+            setTimeout(() => {
+                bullet.destroy();
+                bullets = bullets.filter(b => b !== bullet);
+                socket.emit('destroyBullet', bullet.id);
+            }, 5000);
             
             // Destroy bullet when it hits a platform
             game.scene.scenes[0].physics.add.collider(bullet, platforms, () => {
@@ -706,8 +732,8 @@ function createBullet(bulletData, id, tint, type){
             // Generate a unique ID for the bullet
             bullet.id = id;
 
-            bullet.body.velocity.x = bulletData.dir.x * bombData.v + localPlayer.body.velocity.x;
-            bullet.body.velocity.y = bulletData.dir.y * bombData.v + localPlayer.body.velocity.y;    
+            bullet.body.velocity.x = bulletData.dir.x * bombData.v + bulletData.bonusV.x;
+            bullet.body.velocity.y = bulletData.dir.y * bombData.v + bulletData.bonusV.y;    
             bullet.shooterId = bulletData.shooterId;
             
             updateBulletRotation(bullet);
@@ -722,7 +748,6 @@ function createBullet(bulletData, id, tint, type){
         bullets.push(bullet);
     }  else if (type == 'shotgun'){
             const bullet = game.scene.scenes[0].bulletGroup.create(bulletData.x, bulletData.y, 'shotgun');
-            var randomVelocity = (Math.random() * 200) - 100;
             bullet.setSize(shotgunData.size, shotgunData.size);
             bullet.setDisplaySize(shotgunData.displaySize, shotgunData.displaySize);
             bullet.setTint(tint);
@@ -734,18 +759,23 @@ function createBullet(bulletData, id, tint, type){
             // Generate a unique ID for the bullet
             bullet.id = id;
 
-            bullet.body.velocity.x = (bulletData.dir.x * shotgunData.v) + randomVelocity + localPlayer.body.velocity.x;
-            bullet.body.velocity.y = (bulletData.dir.y * shotgunData.v) + randomVelocity + localPlayer.body.velocity.y;    
+            bullet.body.velocity.x = (bulletData.dir.x * shotgunData.v) + bulletData.bonusV.x;
+            bullet.body.velocity.y = (bulletData.dir.y * shotgunData.v) + bulletData.bonusV.y;    
 
             bullet.shooterId = bulletData.shooterId;
             
             updateBulletRotation(bullet);
             
             // Destroy bullet when it hits a platform
+            setTimeout(() => {
+                
+            }, 5000);
             game.scene.scenes[0].physics.add.collider(bullet, platforms, () => {
-                bullet.destroy();
-                bullets = bullets.filter(b => b !== bullet);
-                socket.emit('destroyBullet', bullet.id);
+                if(bullet){
+                    bullet.destroy();
+                    bullets = bullets.filter(b => b !== bullet);
+                    socket.emit('destroyBullet', bullet.id);
+                }
             });
         bullets.push(bullet);
     } else if (type == 'knife'){
@@ -761,8 +791,8 @@ function createBullet(bulletData, id, tint, type){
             // Generate a unique ID for the bullet
             bullet.id = id;
 
-            bullet.body.velocity.x = (bulletData.dir.x * knifeData.v) + localPlayer.body.velocity.x;
-            bullet.body.velocity.y = (bulletData.dir.y * knifeData.v) + localPlayer.body.velocity.y;    
+            bullet.body.velocity.x = (bulletData.dir.x * knifeData.v) + bulletData.bonusV.x;
+            bullet.body.velocity.y = (bulletData.dir.y * knifeData.v) + bulletData.bonusV.y;    
 
             bullet.shooterId = bulletData.shooterId;
             
@@ -790,8 +820,8 @@ function createBullet(bulletData, id, tint, type){
             // Generate a unique ID for the bullet
             bullet.id = id;
 
-            bullet.body.velocity.x = bulletData.dir.x * ballData.v + localPlayer.body.velocity.x;
-            bullet.body.velocity.y = bulletData.dir.y * ballData.v + localPlayer.body.velocity.y;    
+            bullet.body.velocity.x = bulletData.dir.x * ballData.v + bulletData.bonusV.x;
+            bullet.body.velocity.y = bulletData.dir.y * ballData.v + bulletData.bonusV.y;    
             bullet.shooterId = bulletData.shooterId;
             
             updateBulletRotation(bullet);
@@ -817,7 +847,7 @@ function updateBulletRotation(bullet) {
     bullet.setAngle(Phaser.Math.RadToDeg(angle));
 }
 
-function createExplosion(x,y,shooter){
+function createExplosion(x,y,shooter, noDmg){
     const explosion = game.scene.scenes[0].bulletGroup.create(x, y, 'explosion');
     
     explosion.shooterId = shooter;
@@ -827,10 +857,14 @@ function createExplosion(x,y,shooter){
     explosion.body.allowGravity = false;
     bullets.push(explosion);
 
-    
+    if (noDmg == true){
+        bullets = bullets.filter(b => b !== explosion);
+    }
     setTimeout(() => {
         explosion.destroy();
+        if (explosion){
         bullets = bullets.filter(b => b !== explosion);
+        }
     }, 300);
 
 }
@@ -1039,7 +1073,7 @@ function update() {
                         
                         if (bullet.type == 'bomb') {
                             // Create the explosion
-                            createExplosion(bullet.x, bullet.y, bullet.shooterId);
+                            createExplosion(bullet.x, bullet.y, bullet.shooterId, true);
                             socket.emit('createExplosion', {x: bullet.x, y: bullet.y, id: bullet.shooterId});
                             dealDmg(id, 25);
                         }
@@ -1070,7 +1104,7 @@ function update() {
                 }
 
                 // Bullet out of bounds cleanup
-                if (bullet.y > 1990) {
+                if (bullet.y > 1990 || Math.abs(bullet.x) > 20000) {
                     bullet.destroy();
                     bullets.splice(index, 1);
                 }

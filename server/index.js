@@ -45,7 +45,7 @@ io.on('connection', (socket) => {
 
 
     
-     socket.on('shootBullet', ({direction, id, tint, type}) => {
+     socket.on('shootBullet', ({direction, id, tint, type, bonusV}) => {
         console.log(tint);
         const shooter = players[socket.id];
         
@@ -59,6 +59,7 @@ io.on('connection', (socket) => {
             dir: direction,
             type: type,
             speed: 500,
+            bonusV: bonusV,
         };
         bullets.push(bullet);
         console.log(type);
