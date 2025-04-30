@@ -111,6 +111,7 @@ function preload() {
     this.load.image('sprite2', 'assets/sprite3.png');
     this.load.image('sprite3', 'assets/sprite4.png');
     this.load.image('sprite4', 'assets/sprite5.png');
+    this.load.image('tony', 'assets/anthony_tweaker_sprite.png');
     this.load.image('platform', 'assets/platform.png');
     this.load.image('platform2', 'assets/platform2.png');
     this.load.image('cityPlatform', 'assets/cityPlatform.png');
