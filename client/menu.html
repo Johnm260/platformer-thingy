@@ -355,9 +355,6 @@
             let alreadyExists = Array.from(weapon1Select.options).some(
                 opt => opt.value === secretWeaponValue
             );
-            if (localStorage.weapon1 === "skateboard"){
-                weapon1Select.value = 'skateboard';
-            }
             if (!alreadyExists) {
                 let option = document.createElement("option");
                 option.value = secretWeaponValue;

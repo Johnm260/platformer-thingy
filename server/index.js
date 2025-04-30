@@ -22,9 +22,10 @@ io.on('connection', (socket) => {
                 name,
                 hp: 100,
                 color,
-                sprite // Store the selected sprite
+                sprite,
+                skateboard: false,
             };
-
+    console.log(players[socket.id].skateboard);
     console.log('A user connected:', socket.id, 'username:', players[socket.id].name, 'sprite:', players[socket.id].sprite);
 
     // Emit the 'init' event to the newly connected player
@@ -113,6 +114,11 @@ io.on('connection', (socket) => {
                 velocity: player.velocity
             });
         }
+    });
+    
+    socket.on('skateboard', (id) => {
+        players[socket.id].skateboard = true;
+        socket.broadcast.emit('skateboarder', socket.id);
     });
 
     // Handle freezing/unfreezing players

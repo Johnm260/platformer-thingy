@@ -16,6 +16,8 @@ let dashCooldown;
 let selectedSprite = localStorage.getItem('selectedSprite') || 'sprite1';
 console.log(selectedSprite);
 let mousePosition = { x: 0, y: 0 };
+let otherSkateboards = {};
+let hasSkateboard;
 
 let playerColor = JSON.parse(localStorage.getItem("playerColor")) || { red: 255, green: 255, blue: 255 };
 let weapon1 = localStorage.getItem("weapon1");
@@ -283,11 +285,11 @@ function create() {
         skateboard = this.physics.add.sprite(100, 450, 'skateboard');
         skateboard.setDisplaySize(44, 16);
         skateboard.body.setAllowGravity(false);
+        hasSkateboard = true;
     }
+    
     localPlayer = this.physics.add.sprite(100, 450, selectedSprite);
-    if (weapon1 === "skateboard"){
-        localPlayer.setSize(320,400);
-    }
+    
     localPlayer.setDisplaySize(32, 32);
 
     localPlayer.setCollideWorldBounds(true);
@@ -295,6 +297,7 @@ function create() {
     playerTint = tint;
     this.physics.add.collider(localPlayer, platforms);
     localPlayer.hp = 100;
+    localPlayer.setDepth(5);
         
     this.cameras.main.setBounds(-20000, 0, 35000, 1600);
     this.physics.world.setBounds(-20000, 0, 35000, 2000);
@@ -508,6 +511,14 @@ function create() {
 
 
     }
+    
+    socket.on('skateboarder', (playerId) => {
+        otherPlayers[playerId].skateboard = true;
+        let otherSkateboard = this.physics.add.sprite(100, 450, 'skateboard');
+        otherSkateboard.setDisplaySize(44, 16);
+        otherSkateboard.body.setAllowGravity(false);
+        otherSkateboards[playerId] = otherSkateboard;
+    });
 
 
 
@@ -614,20 +625,16 @@ function create() {
             updatePlayerList();
         });
 
-
-    socket.on('playerMoved', (playerData) => {
-        if (otherPlayers[playerData.id]) {
-            otherPlayers[playerData.id].setX(playerData.x);
-            otherPlayers[playerData.id].setY(playerData.y);
-        }
-    });
-
     socket.on('playerDisconnected', (playerId) => {
         if (otherPlayers[playerId].hpBar) {
             otherPlayers[playerId].hpBar.destroy();
         }
         if (otherPlayers[playerId].hpBarBg) {
             otherPlayers[playerId].hpBarBg.destroy();
+        }
+        if (otherPlayers[playerId].skateboard == true){
+            otherSkateboards[playerId].destroy();
+            delete otherSkateboards[playerId];
         }
         if (otherPlayers[playerId]) {
             otherPlayers[playerId].destroy();
@@ -654,6 +661,11 @@ function create() {
             createBullet(bulletData, id, tint, type);
         }
     });
+    
+    if (weapon1 === "skateboard"){
+        localPlayer.setSize(320,400);
+        socket.emit('skateboard', (localPlayerId));
+    }
 
 
     // Handle chat messages
@@ -682,6 +694,7 @@ function create() {
 
         // Scroll to the bottom of the chat
         chatMessages.scrollTop = chatMessages.scrollHeight;
+
         }
     });
 }
@@ -1190,20 +1203,50 @@ function update() {
 
     // Emit player data (position, velocity, and acceleration) to the server
     socket.emit('playerMove', playerData);
-    if (skateboard){
+    if (hasSkateboard){
         skateboard.body.x = localPlayer.body.x - 7;
         skateboard.body.y = localPlayer.body.y + 28;
     }
 }
 
-// Listen for updates from other players
+const playerTimeouts = {}; // Make sure this is declared at top level
+
 socket.on('playerMoved', (playerData) => {
     if (otherPlayers[playerData.id]) {
-        otherPlayers[playerData.id].setX(playerData.x);
-        otherPlayers[playerData.id].setY(playerData.y);
-        otherPlayers[playerData.id].setVelocity(playerData.velocity.x, playerData.velocity.y);
+        const player = otherPlayers[playerData.id];
+
+        player.setX(playerData.x);
+        player.setY(playerData.y);
+        player.setVelocity(playerData.velocity.x, playerData.velocity.y);
+
+        if (player.skateboard === true) {
+
+            if (otherSkateboards[playerData.id]) {
+                otherSkateboards[playerData.id].setX(player.x);
+                otherSkateboards[playerData.id].setY(player.y + 18);
+
+                const speed = Math.abs(playerData.velocity.x) + Math.abs(playerData.velocity.y);
+                if (speed > 20) {
+                    otherSkateboards[playerData.id].setVelocity(playerData.velocity.x, playerData.velocity.y);
+                } else {
+                    otherSkateboards[playerData.id].setVelocity(0, 0);
+                }
+            }
+            if (playerTimeouts[playerData.id]) {
+                clearTimeout(playerTimeouts[playerData.id]);
+            }
+
+            playerTimeouts[playerData.id] = setTimeout(() => {
+                if (otherSkateboards[playerData.id]) {
+                    otherSkateboards[playerData.id].setVelocity(0, 0);
+                    otherSkateboards[playerData.id].setX(otherPlayers[playerData.id].x);
+                    otherSkateboards[playerData.id].setY(otherPlayers[playerData.id].y + 18);
+                }
+            }, 50);
+        }
     }
 });
+
 
 socket.on('syncHP', (hp) => {
     localPlayer.hp = hp;
@@ -1241,23 +1284,6 @@ socket.on("tookDamage", ({ dmg, id, hp, origin }) => {
     }
 });
 
-
-// Client-side: When a bullet is destroyed (on all clients)
-socket.on('destroyBullet', (bulletId) => {
-
-    // Find the bullet in the local array
-    const bullet = bullets.find(b => b.id === bulletId);
-    
-    if (bullet) {
-        console.log(bullet.type);
-        // Handle the bullet destruction
-        if (bullet.type != 'ball' && bullet.type != 'explosion'){
-            destroyBullet(bullet);  // Implement the removal of the bullet visually
-            bullets = bullets.filter(b => b !== bullet);  // Remove the bullet from the local array
-        }
-    }
-});
-
 socket.on("killedPlayer", (origin) => {
     console.log(origin);
     console.log(localPlayerId);
@@ -1284,6 +1310,7 @@ socket.on('teleported', ({x}) =>{
 });
 
 
+
 function destroyBullet(bullet) {
     if (!bullet || !bullet.body) return;
 
@@ -1295,6 +1322,7 @@ function createOtherPlayer(id, playerData) {
     const spriteKey = playerData.sprite || 'sprite1'; // fallback just in case
 
     const otherPlayer = game.scene.scenes[0].physics.add.sprite(playerData.x, playerData.y, spriteKey);
+    otherPlayer.setDepth(5);
     otherPlayer.setCollideWorldBounds(true);
     otherPlayer.setTint(rgbToHexTint(playerData.color));
     otherPlayer.color = playerData.color;
@@ -1302,6 +1330,18 @@ function createOtherPlayer(id, playerData) {
     otherPlayer.setDisplaySize(32, 32);
     otherPlayer.hp = playerData.hp;
     otherPlayer.frozen = false;
+    otherPlayer.skateboard = playerData.skateboard;
+    if (otherPlayer.skateboard == null){
+        otherPlayer.skateboard = false;
+    }
+    
+        if (otherPlayer.skateboard == true){
+            let otherSkateboard = this.physics.add.sprite(100, 450, 'skateboard');
+            otherSkateboard.setDisplaySize(44, 16);
+            otherSkateboard.body.setAllowGravity(false);
+            console.log(id, otherSkateboard);
+            otherSkateboards[id] = otherSkateboard;
+        }
 
     // Add health bar graphics
     otherPlayer.hpBarBg = game.scene.scenes[0].add.graphics();
