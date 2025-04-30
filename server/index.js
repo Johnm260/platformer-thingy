@@ -7,6 +7,9 @@ const server = http.createServer(app);
 const io = socketIo(server);
 
 app.use(express.static('client'));
+// Example routes
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'client', 'index.html')));
+app.get('/menu', (req, res) => res.sendFile(path.join(__dirname, 'client', 'menu.html')));
 
 let players = {};
 let bullets = [];
