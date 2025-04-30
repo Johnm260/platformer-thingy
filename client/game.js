@@ -1187,7 +1187,7 @@ function update() {
             const local = localPlayer
             if (Phaser.Geom.Intersects.RectangleToRectangle(local.getBounds(), target.getBounds())) {  
                 if (Math.abs(local.body.velocity.x) > Math.abs(target.body.velocity.x)){
-                    dealDmg(id, 20);
+                    dealDmg(id, (local.body.velocity.x / 20));
                     console.log(id);
                     didHit = true;
                 }
