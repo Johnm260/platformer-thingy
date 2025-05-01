@@ -355,25 +355,27 @@ function create() {
         
         if (isFrozen || isTyping || !canShoot) return;
             if (type == 'evilnuke1234'){
-                var bonusVelocity = {x: localPlayer.body.velocity.x, y: localPlayer.body.velocity.y};    
-                var offset1 = (Math.random() * (0.3) - 0.15);
-                var offset2 = (Math.random() * (0.3) - 0.15);
-                var data = shootBulletTowardsMouse('evilnuke1234', bonusVelocity, offset1, offset2);
-                var bulletDirection = data[0];
-                bulletDirection.x += offset1;
-                bulletDirection.y -= offset2;
-                var id = data[1];
-                var bulletTint = data[2];
-                var newData = {
-                    shooterId: localPlayerId,
-                    x: localPlayer.x,
-                    y: localPlayer.y,
-                    dir: bulletDirection,
-                    bonusV: bonusVelocity,
-                    speed: 200,
-                };
-                shootCooldown = 0;
-                createBullet(newData, id, bulletTint, 'evilnuke1234');
+                for (var i = 0; i < pelletCount; i++){
+                    var bonusVelocity = {x: localPlayer.body.velocity.x, y: localPlayer.body.velocity.y};    
+                    var offset1 = (Math.random() * (0.3) - 0.15);
+                    var offset2 = (Math.random() * (0.3) - 0.15);
+                    var data = shootBulletTowardsMouse('evilnuke1234', bonusVelocity, offset1, offset2);
+                    var bulletDirection = data[0];
+                    bulletDirection.x += offset1;
+                    bulletDirection.y -= offset2;
+                    var id = data[1];
+                    var bulletTint = data[2];
+                    var newData = {
+                        shooterId: localPlayerId,
+                        x: localPlayer.x,
+                        y: localPlayer.y,
+                        dir: bulletDirection,
+                        bonusV: bonusVelocity,
+                        speed: 200,
+                    };
+                    shootCooldown = 0;
+                    createBullet(newData, id, bulletTint, 'evilnuke1234');
+                }
             }
         if (type == 'arrow'){
                 var bonusVelocity = {x: localPlayer.body.velocity.x, y: localPlayer.body.velocity.y};
