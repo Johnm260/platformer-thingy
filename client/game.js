@@ -323,6 +323,7 @@ function create() {
     // Track the mouse position
     let player = localPlayer;
     // Update mouse position on pointer move
+    this.pointer = this.input.activePointer;
     this.input.on('pointermove', (pointer) => {
         mousePosition.x = pointer.worldX;
         mousePosition.y = pointer.worldY;
@@ -355,11 +356,12 @@ function create() {
         if (isFrozen || isTyping || !canShoot) return;
             if (type == 'evilnuke1234'){
                 var bonusVelocity = {x: localPlayer.body.velocity.x, y: localPlayer.body.velocity.y};    
-                var offset = (Math.random() * (0.3) - 0.15);
-                var data = shootBulletTowardsMouse('evilnuke1234', bonusVelocity, offset);
+                var offset1 = (Math.random() * (0.3) - 0.15);
+                var offset2 = (Math.random() * (0.3) - 0.15);
+                var data = shootBulletTowardsMouse('evilnuke1234', bonusVelocity, offset1, offset2);
                 var bulletDirection = data[0];
-                bulletDirection.x += offset;
-                bulletDirection.y -= offset;
+                bulletDirection.x += offset1;
+                bulletDirection.y -= offset2;
                 var id = data[1];
                 var bulletTint = data[2];
                 var newData = {
@@ -412,11 +414,12 @@ function create() {
                             x: localPlayer.body.velocity.x + ((Math.random() * 200) - 100),
                             y: localPlayer.body.velocity.y + ((Math.random() * 200) - 100)
                             };
-                        var offset = (Math.random() * (0.3) - 0.15);
-                        var data = shootBulletTowardsMouse('shotgun', bonusVelocity, offset);
+                        var offset1 = (Math.random() * (0.3) - 0.15);
+                        var offset2 = (Math.random() * (0.3) - 0.15);
+                        var data = shootBulletTowardsMouse('shotgun', bonusVelocity, offset1, offset2);
                         var bulletDirection = data[0];
-                        bulletDirection.x += offset;
-                        bulletDirection.y -= offset;
+                        bulletDirection.x += offset1;
+                        bulletDirection.y -= offset2;
                         var randomVelocity = (Math.random() * 200) - 100;
                         var id = data[1];
                         var bulletTint = data[2];
@@ -434,11 +437,12 @@ function create() {
             }
             if (type == 'knife'){
                     var bonusVelocity = {x: localPlayer.body.velocity.x, y: localPlayer.body.velocity.y};
-                    var offset = (Math.random() * (0.05) - 0.025);
-                    var data = shootBulletTowardsMouse('knife', bonusVelocity, offset);
+                    var offset1 = (Math.random() * (0.05) - 0.025);
+                    var offset2 = (Math.random() * (0.05) - 0.025);
+                    var data = shootBulletTowardsMouse('knife', bonusVelocity, offset1, offset2);
                     var bulletDirection = data[0];
-                    bulletDirection.x += offset;
-                    bulletDirection.y -= offset;
+                    bulletDirection.x += offset1;
+                    bulletDirection.y -= offset2;
                     var id = data[1];
                     var bulletTint = data[2];
                     var newData = {
@@ -524,21 +528,23 @@ function create() {
 
 
     // Function to calculate the direction and shoot a bullet towards the mouse
-    function shootBulletTowardsMouse(type, bonusVelocity, rand) {
+    function shootBulletTowardsMouse(type, bonusVelocity, rand1, rand2) {
         // Calculate direction towards mouse (relative to player position)
         let dx = mousePosition.x - player.x;
         let dy = mousePosition.y - player.y;
         
-        if (rand == null){
-        rand = 0;
-                    var offset = (Math.random() * (0.05) - 0.025);
+        if (rand1 == null){
+        rand1 = 0;
+        }
+        if (rand2 == null){
+        rand2 = 0;
         }
 
         // Normalize the direction vector
         let magnitude = Math.sqrt(dx * dx + dy * dy);
         let normalizedDirection = { x: dx / magnitude, y: dy / magnitude };
-        normalizedDirection.x += rand;
-        normalizedDirection.y -= rand;
+        normalizedDirection.x += rand1;
+        normalizedDirection.y -= rand2;
 
         // Fire the bullet in that direction
         let id = generateBulletId();  // Ensure unique bullet IDs
@@ -950,6 +956,13 @@ function drawHPBar(ctx, x, y, hp, maxHP = 100) {
 
 function update() {
     if (localPlayer) {
+    
+        const worldX = this.cameras.main.getWorldPoint(this.pointer.x, this.pointer.y).x;
+        const worldY = this.cameras.main.getWorldPoint(this.pointer.x, this.pointer.y).y;
+
+        mousePosition.x = worldX;
+        mousePosition.y = worldY;
+
         
         weapon1Elapsed = Math.min(maxWeapon1Cooldown, weapon1Elapsed + this.game.loop.delta);
         weapon2Elapsed = Math.min(maxWeapon2Cooldown, weapon2Elapsed + this.game.loop.delta);
